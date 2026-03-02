@@ -21,11 +21,13 @@ nlp-mdsite/
 
 
 ## Content Pipeline
-Content is not authored in this repo. The expected input is a `content/` directory
-populated by `mdpub` containing:
-- MDX files with enriched frontmatter (tags, metrics, semantic signals)
+This template is pipeline-agnostic — it accepts raw markdown from any source. The expected
+input is a `content/` directory (gitignored, always externally provided) containing:
+- Markdown or MDX files with frontmatter (`title`, `date`, `categories`, `tags`)
 - `_meta.js` files for manual page ordering and per-page theme overrides
-- A `site.config.js` with site name, base URL, and deployment path
+- A `site.config.js` with site name, base URL, deployment path, and theme fields
+
+For local development, populate `content/` by copying from `examples/frww`.
 
 
 ## Routing & Configuration
