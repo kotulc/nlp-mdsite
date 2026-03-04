@@ -1,6 +1,27 @@
 # nlp-mdsite — Technical Specification
 
 
+## Development Philosophy
+
+Every user interaction, manual step, and configuration decision must be documented
+explicitly as it is implemented. The purpose is twofold:
+
+1. **Reproducibility** — any developer can follow documented steps to reproduce the
+   current project state from a fresh clone.
+2. **Automation target** — every documented manual step is a candidate for scripted
+   automation in a later phase. Steps are captured now so they can be eliminated later.
+
+When implementing any phase:
+- Record every command that must be run manually
+- Document every file that must be edited by hand, and what must change
+- Flag any step that requires a decision or user input
+- Write scripts incrementally: if a step is repeated more than once, automate it
+
+The end goal (Phase 6) is a single command that accepts a content source and a minimal
+config and produces a fully built, previewable site with no further manual intervention.
+Agent-callable interfaces should be non-interactive and driven entirely by `site.config.js`.
+
+
 ## Stack
 - **Framework**: Next.js (static export)
 - **Content layer**: Nextra (MDX rendering, page tree, routing)

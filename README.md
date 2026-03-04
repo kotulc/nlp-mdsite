@@ -51,6 +51,64 @@ this template is driven entirely by its config file and content directory.
 - `mdpub build` / `preview` / `publish` drive the site lifecycle
 
 
+## Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) 18 or later
+- npm (bundled with Node.js)
+
+### Setup
+
+**1. Install dependencies**
+```bash
+npm install
+```
+
+**2. Add your content**
+
+Place your markdown files in a source directory with the following layout:
+```
+<source>/
+├── pages/           # Static pages (home.md becomes the site index)
+│   ├── home.md
+│   └── images/
+└── posts/
+    └── <year>/      # One folder per year, e.g. 2023/
+        ├── post-slug.md
+        └── images/
+```
+
+Frontmatter fields used by the template: `title`, `date`, `categories`, `tags`.
+
+**3. Ingest content**
+```bash
+npm run ingest                        # from examples/frww (default)
+npm run ingest -- path/to/your/content   # from a custom directory
+```
+
+This copies your markdown into `pages/`, renames `.md` to `.mdx`, copies images
+to `public/images/`, rewrites image paths, fixes any corrupt JPEG EXIF data, and
+auto-generates `_meta.json` ordering files based on frontmatter dates.
+
+**4. Configure the site**
+
+Edit [site.config.js](site.config.js) to set the site title and base URL:
+```js
+module.exports = {
+  title: 'My Site',
+  base_url: 'https://username.github.io',
+  base_path: '/repo-name',   // empty string for root domains
+}
+```
+
+**5. Preview locally**
+```bash
+npm run dev        # development server with hot reload
+npm run build      # production build → out/
+npm run preview    # serve the built out/ directory
+```
+
+
 ## Roadmap
 **Phase 1** — Off-the-shelf stack (current)
 - Next.js + Nextra docs theme
