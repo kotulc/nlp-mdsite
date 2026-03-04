@@ -80,17 +80,7 @@ Place your markdown files in a source directory with the following layout:
 
 Frontmatter fields used by the template: `title`, `date`, `categories`, `tags`.
 
-**3. Ingest content**
-```bash
-npm run ingest                        # from examples/frww (default)
-npm run ingest -- path/to/your/content   # from a custom directory
-```
-
-This copies your markdown into `pages/`, renames `.md` to `.mdx`, copies images
-to `public/images/`, rewrites image paths, fixes any corrupt JPEG EXIF data, and
-auto-generates `_meta.json` ordering files based on frontmatter dates.
-
-**4. Configure the site**
+**3. Configure the site**
 
 Edit [site.config.js](site.config.js) to set the site title and base URL:
 ```js
@@ -100,6 +90,17 @@ module.exports = {
   base_path: '/repo-name',   // empty string for root domains
 }
 ```
+
+**4. Run setup**
+```bash
+npm run setup                             # ingest from examples/frww (default)
+npm run setup -- --source path/to/content # ingest from a custom directory
+npm run setup -- --build                  # also run a production build
+```
+
+This validates your environment, copies markdown into `pages/`, renames `.md` to `.mdx`,
+copies images to `public/images/`, rewrites image paths, fixes any corrupt JPEG EXIF data,
+and auto-generates `_meta.json` ordering files and `posts-index.json` from frontmatter dates.
 
 **5. Preview locally**
 ```bash

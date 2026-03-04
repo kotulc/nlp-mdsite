@@ -3,8 +3,8 @@
  * Rendered below the page title for any page with a `date` frontmatter field.
  */
 function fmt_date(date_str) {
-  const d = new Date(date_str)
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  const [year, month, day] = date_str.split('-').map(Number)
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
 export default function PageHeader({ date, reading_time }) {
