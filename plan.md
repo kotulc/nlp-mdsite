@@ -57,6 +57,43 @@ Reference content: 24 markdown files — 7 static pages and 16 dated blog posts 
 
 ---
 
+## Phase 2b — Generalized Source Layout
+
+**Goal:** `npm run ingest` accepts any folder structure of markdown files, not just the
+two-level `pages/` + `posts/<year>/` layout of `examples/frww`.
+
+### Background
+The current ingest script hardcodes two source paths (`<src>/pages/` and
+`<src>/posts/<year>/`). Any content source with a different structure will fail. The fix is
+to walk the source tree generically and mirror it into the site content directory (`pages/`).
+
+### Tasks
+1. Rewrite `ingest_static_pages()` and `ingest_posts()` in `scripts/ingest.js` as a single
+   recursive `ingest_dir(src_dir, dest_dir)` function that:
+   - Walks any directory tree
+   - Converts `.md` → `.mdx`, renaming `home.md`/`index.md` → `index.mdx`
+   - Copies adjacent `images/` subdirectory to `public/images/<relative-path>/`
+   - Rewrites image references in each MDX file to the new absolute path
+   - Strips corrupt JPEG EXIF segments from copied images
+   - Injects `reading_time` into frontmatter
+2. Update `_meta.json` generation:
+   - For each directory, collect all pages and sort by `date` frontmatter (newest-first)
+     if any page has a date; otherwise sort alphabetically by slug
+   - Retain `home`/`index` as the first entry regardless of sort order
+3. Update `write_posts_index()` to collect all pages that have a `date` field (not just
+   those under `posts/<year>/`) and write them to `public/posts-index.json`
+4. Update `write_posts_page()` to place the `PostIndex` page at a configurable location
+   (default: `pages/posts/index.mdx`) or omit it if no dated posts exist
+5. Verify that `examples/frww` still ingests correctly under the new generic walker
+6. Add a test fixture with a flat/non-standard source layout and verify correct output
+
+### Done when
+`npm run ingest -- path/to/any/markdown/tree` produces a correctly structured and routed
+site regardless of the source folder layout.
+
+
+---
+
 ## Phase 3 — Page Components & Metadata Display
 
 **Goal:** Tags, dates, and categories are visible in the UI; posts have a browsable index.

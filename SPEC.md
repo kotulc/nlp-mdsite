@@ -42,18 +42,49 @@ nlp-mdsite/
 
 
 ## Content Pipeline
-This template is pipeline-agnostic — it accepts raw markdown from any source. The expected
-input is a `content/` directory (gitignored, always externally provided) containing:
-- Markdown or MDX files with frontmatter (`title`, `date`, `categories`, `tags`)
-- `_meta.js` files for manual page ordering and per-page theme overrides
-- A `site.config.js` with site name, base URL, deployment path, and theme fields
+This template is pipeline-agnostic — it accepts raw markdown from any source directory in
+any folder structure. The ingestion script (`npm run setup` / `npm run ingest`) mirrors the
+source tree into the Next.js site content directory (`pages/`), converting `.md` → `.mdx`.
 
-For local development, populate `content/` by copying from `examples/frww`.
+**Source layout**: No specific folder structure is required. Any directory tree of markdown
+files is valid. The only special convention is `home.md` or `index.md` at any level, which
+is renamed to `index.mdx` to serve as the section landing page.
+
+**Image handling**: Any `images/` subdirectory found in the source is copied to
+`public/images/<relative-path>/` and image references in the adjacent markdown files are
+rewritten to absolute `/images/...` URLs.
+
+**`_meta.json` generation**: At each folder level, an ordering file is auto-generated:
+- If any page in the folder has a `date` frontmatter field, pages are sorted newest-first
+- Otherwise, pages are sorted alphabetically by slug
+
+**Frontmatter fields used by the template**: `title`, `date`, `categories`, `tags`.
+Additional fields are passed through and available in components via Nextra's `frontMatter`.
+
+For local development the default source is `examples/frww`.
+
+> **Current limitation**: The existing ingest script (`scripts/ingest.js`) expects the
+> specific two-level layout of `examples/frww` (`<src>/pages/` and `<src>/posts/<year>/`).
+> Generalizing to arbitrary folder trees is tracked as a planned enhancement — see plan.md.
+
+
+## Site Content Directory (`pages/`)
+The generated site content lives in `pages/` — a name imposed by the Next.js Pages Router.
+This directory is not "pages" in the page-type sense; it is the framework's file-system
+routing root and contains all generated MDX content, static pages, and posts.
+
+**Why `pages/`**: Next.js Pages Router requires this exact directory name. It cannot be
+renamed without migrating to the App Router (supported in Nextra v3, not v2). A future
+migration to Nextra v3 would allow using `app/` instead, which is slightly more neutral but
+still a framework convention. This is tracked as an open question.
+
+In all user-facing documentation, refer to this as the **site content directory**; use the
+path `pages/` only when describing the technical file structure.
 
 
 ## Routing & Configuration
-- Nextra handles file-system routing from `content/`
-- `_meta.js` at each folder level controls display order and section labels
+- Nextra handles file-system routing from `pages/` (the site content directory)
+- `_meta.json` at each folder level controls display order and section labels
 - Per-page theme overrides (e.g. hide sidebar, full-width) set via frontmatter
 
 
@@ -144,3 +175,5 @@ Base path and asset prefix configured via `site.config.js` to support project-pa
 - Color library selection: Open Color, Tailwind, or Material Design (TBD)
 - Search result shape: finalize the per-page index JSON schema
 - `site.config.js` full schema: document all expected fields and their types
+- **Nextra v3 / App Router migration**: Nextra v3 uses the Next.js App Router (`app/` directory instead of `pages/`). Migrating would eliminate the confusing `pages/` name for the site content directory, but requires evaluating Nextra v3 stability and any breaking changes in MDX handling, `_meta.json` format, and the theme config API.
+- **Generalized ingest**: The current ingest script expects the `examples/frww` two-level layout; Phase 2b tracks making it work with any source folder structure.
