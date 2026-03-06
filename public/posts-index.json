@@ -191,6 +191,51 @@
     "url": "/posts/2020/golden-giddyup"
   },
   {
+    "slug": "about-us",
+    "title": "About us",
+    "date": "2020-02-17",
+    "categories": [],
+    "tags": [],
+    "reading_time": 1,
+    "url": "/about/about-us"
+  },
+  {
+    "slug": "contact",
+    "title": "Contact us",
+    "date": "2020-02-17",
+    "categories": [],
+    "tags": [],
+    "reading_time": 1,
+    "url": "/about/contact"
+  },
+  {
+    "slug": "privacy-policy",
+    "title": "Privacy Policy",
+    "date": "2020-02-17",
+    "categories": [],
+    "tags": [],
+    "reading_time": 3,
+    "url": "/about/privacy-policy"
+  },
+  {
+    "slug": "terms-and-conditions",
+    "title": "Terms and Conditions",
+    "date": "2020-02-17",
+    "categories": [],
+    "tags": [],
+    "reading_time": 9,
+    "url": "/about/terms-and-conditions"
+  },
+  {
+    "slug": "wheels",
+    "title": "Wheels and wheel building",
+    "date": "2020-02-17",
+    "categories": [],
+    "tags": [],
+    "reading_time": 6,
+    "url": "/wheels/wheels"
+  },
+  {
     "slug": "revolution-enduro",
     "title": "Revolution Enduro",
     "date": "2020-02-04",

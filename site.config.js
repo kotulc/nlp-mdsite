@@ -1,6 +1,6 @@
 /** Site-level configuration. Populate before running mdpub build or next dev. */
 module.exports = {
-  title: 'My Site',
+  title: 'Front Range Wheel Works',
   base_url: '',
   base_path: '',
 

@@ -66,14 +66,16 @@ npm install
 
 **2. Add your content**
 
-Place your markdown files in a source directory with the following layout:
+Place your markdown files in a source directory in any folder structure. The directory tree
+is mirrored directly into the site — subdirectories become URL path segments.
+
 ```
 <source>/
-├── pages/           # Static pages (home.md becomes the site index)
-│   ├── home.md
-│   └── images/
-└── posts/
-    └── <year>/      # One folder per year, e.g. 2023/
+├── home.md          # home.md or index.md at any level → section landing page
+├── about-us.md
+├── images/          # images/ next to any .md files → copied to public/images/
+└── posts/           # any subdirectory structure is valid
+    └── <year>/
         ├── post-slug.md
         └── images/
 ```

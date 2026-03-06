@@ -1,17 +1,13 @@
 /**
  * Content ingestion pipeline.
- * Copies markdown from a source directory into the pages/ structure:
- *   - Renames .md → .mdx (home.md → index.mdx)
- *   - Copies images to public/images/
- *   - Rewrites relative image paths to absolute /images/... URLs
- *   - Strips corrupt EXIF segments from JPEGs
- *   - Adds reading_time field to each page's frontmatter
- *   - Auto-generates _meta.json ordering files from frontmatter dates
- *   - Writes public/posts-index.json for the PostIndex component
- *
- * Expected source layout:
- *   <src>/pages/*.md + pages/images/
- *   <src>/posts/<year>/*.md + posts/<year>/images/
+ * Recursively mirrors any markdown source tree into the Next.js site content directory (pages/):
+ *   - Renames .md → .mdx (home.md or index.md at any level → index.mdx)
+ *   - Copies images/ subdirectories to public/images/<rel-path>/
+ *   - Rewrites relative image refs to absolute /images/<rel-path>/... URLs
+ *   - Strips corrupt EXIF segments from copied JPEGs
+ *   - Injects reading_time into each page's frontmatter
+ *   - Auto-generates _meta.json at each level (date-sorted if any page has a date, else alpha)
+ *   - Writes public/posts-index.json for all pages with a date field
  *
  * Usage: node scripts/ingest.js [source-dir]
  *        Default source-dir: examples/frww
@@ -26,8 +22,6 @@ const SRC     = path.resolve(process.argv[2] || path.join(ROOT, 'examples/frww')
 const PAGES   = path.join(ROOT, 'pages')
 const PUB_IMG = path.join(ROOT, 'public', 'images')
 const PUB_DIR = path.join(ROOT, 'public')
-
-const UTILITY_PAGES = ['privacy-policy', 'terms-and-conditions']
 
 
 function parse_fm(content) {
@@ -72,7 +66,7 @@ function reading_time(content) {
 
 
 function add_reading_time(mdx_path) {
-  /** Calculate reading time and inject it into the file's frontmatter. Returns minutes. */
+  /** Inject reading_time into frontmatter. Returns estimated minutes. */
   const content = fs.readFileSync(mdx_path, 'utf8')
   const mins = reading_time(content)
   const updated = content.replace(/^(---\r?\n[\s\S]*?)(\r?\n---\r?\n)/, `$1\nreading_time: ${mins}$2`)
@@ -81,129 +75,148 @@ function add_reading_time(mdx_path) {
 }
 
 
-function copy_files(src_dir, dest_dir) {
-  /** Copy all direct files from src_dir to dest_dir (non-recursive). */
-  if (!fs.existsSync(src_dir)) return
-  fs.mkdirSync(dest_dir, { recursive: true })
-  for (const f of fs.readdirSync(src_dir)) {
-    const src_f = path.join(src_dir, f)
-    if (fs.statSync(src_f).isFile()) fs.copyFileSync(src_f, path.join(dest_dir, f))
-  }
-}
-
-
-function rewrite_img_refs(mdx_path, url_prefix) {
-  /** Replace ](images/ with ](<url_prefix>/ in an MDX file. */
+function rewrite_img_refs(mdx_path, img_url) {
+  /** Replace ](images/ with ](<img_url>/ in an MDX file. */
   const original = fs.readFileSync(mdx_path, 'utf8')
-  const updated = original.replace(/\]\(images\//g, `](${url_prefix}/`)
+  const updated = original.replace(/\]\(images\//g, `](${img_url}/`)
   if (updated !== original) fs.writeFileSync(mdx_path, updated)
 }
 
 
 function write_meta(dest_path, entries) {
-  /** Write a _meta.json from an array of [key, value] pairs, preserving order.
+  /** Write a _meta.json from ordered [key, value] pairs, preserving order.
    *  Plain objects cannot be used — JS engines reorder numeric-like keys. */
   const lines = entries.map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
   fs.writeFileSync(dest_path, `{\n${lines.join(',\n')}\n}\n`)
 }
 
 
-function ingest_static_pages() {
-  /** Copy pages/*.md → pages/*.mdx. Returns {slug: title} map. */
-  const src_dir = path.join(SRC, 'pages')
-  const img_dest = path.join(PUB_IMG, 'pages')
-  const meta = {}
-
-  for (const f of fs.readdirSync(src_dir)) {
-    if (!f.endsWith('.md')) continue
-    const slug = f === 'home.md' ? 'index' : path.basename(f, '.md')
-    const dest = path.join(PAGES, `${slug}.mdx`)
-    fs.mkdirSync(path.dirname(dest), { recursive: true })
-    fs.copyFileSync(path.join(src_dir, f), dest)
-    rewrite_img_refs(dest, '/images/pages')
-    add_reading_time(dest)
-    meta[slug] = parse_fm(fs.readFileSync(dest, 'utf8')).title || slug
-  }
-
-  copy_files(path.join(src_dir, 'images'), img_dest)
-  strip_dir(img_dest)
-
-  return meta
+function read_meta(meta_path) {
+  /** Read a _meta.json written by write_meta into ordered [key, value] pairs. */
+  if (!fs.existsSync(meta_path)) return []
+  return fs.readFileSync(meta_path, 'utf8').split('\n').flatMap(l => {
+    const m = l.match(/^\s+"([^"]+)":\s+"([^"]+)",?$/)
+    return m ? [[m[1], m[2]]] : []
+  })
 }
 
 
-function ingest_posts() {
-  /** Copy posts/YEAR/*.md → pages/posts/YEAR/*.mdx.
-   *  Returns { year: [post_record, ...] } where records are sorted newest-first. */
-  const src_dir = path.join(SRC, 'posts')
-  const dest_root = path.join(PAGES, 'posts')
-  const img_root = path.join(PUB_IMG, 'posts')
-  const years_data = {}
+function sort_entries(entries) {
+  /** Sort: index first, then newest-first by date (if any have dates); else alpha.
+   *  Exception: if all non-index slugs look like 4-digit years, sort descending. */
+  const idx  = entries.filter(e => e.slug === 'index')
+  const rest = entries.filter(e => e.slug !== 'index')
+  const has_dates  = rest.some(e => e.date)
+  const all_years  = !has_dates && rest.length > 0 && rest.every(e => /^\d{4}$/.test(e.slug))
 
-  for (const year of fs.readdirSync(src_dir)) {
-    const year_src = path.join(src_dir, year)
-    if (!fs.statSync(year_src).isDirectory()) continue
+  rest.sort(
+    has_dates ? (a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug)
+    : all_years ? (a, b) => b.slug.localeCompare(a.slug)
+    : (a, b) => a.slug.localeCompare(b.slug)
+  )
+  return [...idx, ...rest]
+}
 
-    const year_dest = path.join(dest_root, year)
-    const posts = []
 
-    for (const f of fs.readdirSync(year_src)) {
-      if (!f.endsWith('.md')) continue
-      const slug = path.basename(f, '.md')
-      const dest = path.join(year_dest, `${slug}.mdx`)
-      fs.mkdirSync(year_dest, { recursive: true })
-      fs.copyFileSync(path.join(year_src, f), dest)
-      rewrite_img_refs(dest, `/images/posts/${year}`)
-      const mins = add_reading_time(dest)
-      const fm = parse_fm(fs.readFileSync(dest, 'utf8'))
-      posts.push({
-        slug,
-        title:        fm.title || slug,
-        date:         fm.date || '',
-        categories:   Array.isArray(fm.categories) ? fm.categories : [],
-        tags:         Array.isArray(fm.tags) ? fm.tags : [],
-        reading_time: mins,
-        url:          `/posts/${year}/${slug}`,
-      })
+function ingest_dir(src_dir, dest_dir, rel, dated_posts) {
+  /** Recursively mirror src_dir → dest_dir.
+   *  rel: path from SRC to src_dir using forward slashes ('' for root).
+   *  dated_posts: accumulates all pages with a date field.
+   *  Returns { title } from the directory's index page (or the directory name). */
+  fs.mkdirSync(dest_dir, { recursive: true })
+
+  const img_url  = '/images' + (rel ? `/${rel}` : '')
+  const img_src  = path.join(src_dir, 'images')
+  const img_dest = path.join(PUB_IMG, rel)  // rel='' → PUB_IMG itself
+
+  if (fs.existsSync(img_src) && fs.statSync(img_src).isDirectory()) {
+    fs.mkdirSync(img_dest, { recursive: true })
+    for (const f of fs.readdirSync(img_src)) {
+      const sf = path.join(img_src, f)
+      if (fs.statSync(sf).isFile()) fs.copyFileSync(sf, path.join(img_dest, f))
+    }
+    strip_dir(img_dest)
+  }
+
+  const entries = []
+  const base = path.basename(src_dir)
+  let dir_title = base.charAt(0).toUpperCase() + base.slice(1)
+
+  for (const entry of fs.readdirSync(src_dir).sort()) {
+    const src_entry = path.join(src_dir, entry)
+    const stat = fs.statSync(src_entry)
+
+    if (entry === 'images') continue  // handled above
+
+    if (stat.isDirectory()) {
+      const sub_rel = rel ? `${rel}/${entry}` : entry
+      const { title } = ingest_dir(src_entry, path.join(dest_dir, entry), sub_rel, dated_posts)
+      entries.push({ slug: entry, title, date: '' })
+      continue
     }
 
-    copy_files(path.join(year_src, 'images'), path.join(img_root, year))
-    strip_dir(path.join(img_root, year))
+    const is_md  = entry.endsWith('.md')
+    const is_mdx = entry.endsWith('.mdx')
+    if (!is_md && !is_mdx) continue
 
-    posts.sort((a, b) => b.date.localeCompare(a.date))
-    years_data[year] = posts
+    const base = path.basename(entry, is_mdx ? '.mdx' : '.md')
+    const slug = (base === 'home' || base === 'index') ? 'index' : base
+    const dest = path.join(dest_dir, `${slug}.mdx`)
+    fs.copyFileSync(src_entry, dest)
+    rewrite_img_refs(dest, img_url)
+    const mins = add_reading_time(dest)
+    const fm   = parse_fm(fs.readFileSync(dest, 'utf8'))
+
+    const parts = [...(rel ? rel.split('/') : []), ...(slug === 'index' ? [] : [slug])]
+    const url   = '/' + parts.join('/')
+
+    const record = {
+      slug,
+      title:        fm.title        || slug,
+      date:         fm.date         || '',
+      categories:   Array.isArray(fm.categories) ? fm.categories : [],
+      tags:         Array.isArray(fm.tags)        ? fm.tags        : [],
+      reading_time: mins,
+      url:          url || '/',
+    }
+    entries.push(record)
+    if (fm.date && rel) dated_posts.push(record)  // root-level pages are site pages, not posts
+    if (slug === 'index') dir_title = record.title
   }
 
-  return years_data
+  const sorted = sort_entries(entries)
+  write_meta(path.join(dest_dir, '_meta.json'), sorted.map(e => [e.slug, e.title]))
+  return { title: dir_title }
 }
 
 
-function build_top_meta(page_meta, years) {
-  /** Build top-level _meta.json as ordered pairs: home, content, posts, utility. */
-  const utility = new Set(UTILITY_PAGES)
-  const content = Object.keys(page_meta).filter(k => k !== 'index' && !utility.has(k)).sort()
-  const pairs = [['index', page_meta['index'] || 'Home']]
-  for (const k of content) pairs.push([k, page_meta[k]])
-  pairs.push(['posts', 'Posts'])
-  for (const k of UTILITY_PAGES) { if (page_meta[k]) pairs.push([k, page_meta[k]]) }
-  return pairs
-}
-
-
-function write_posts_index(years_data, years) {
-  /** Write public/posts-index.json — flat list of all posts newest-first. */
-  const all_posts = years.flatMap(y => years_data[y])
+function write_posts_index(dated_posts) {
+  /** Write public/posts-index.json — all dated pages sorted newest-first. */
+  const sorted = [...dated_posts].sort((a, b) => b.date.localeCompare(a.date))
   fs.mkdirSync(PUB_DIR, { recursive: true })
-  fs.writeFileSync(path.join(PUB_DIR, 'posts-index.json'), JSON.stringify(all_posts, null, 2) + '\n')
+  fs.writeFileSync(path.join(PUB_DIR, 'posts-index.json'), JSON.stringify(sorted, null, 2) + '\n')
 }
 
 
-function write_posts_page(dest_posts) {
-  /** Write pages/posts/index.mdx, always regenerated to reflect current posts. */
-  fs.writeFileSync(
-    path.join(dest_posts, 'index.mdx'),
-    '---\ntitle: Posts\n---\n\nimport PostIndex from \'../../components/PostIndex\'\n\n<PostIndex />\n'
-  )
+function write_posts_page() {
+  /** Ensure pages/posts/index.mdx exists for the PostIndex component.
+   *  Also ensures _meta.json for posts/ starts with an 'index' entry. */
+  const dir  = path.join(PAGES, 'posts')
+  const dest = path.join(dir, 'index.mdx')
+  fs.mkdirSync(dir, { recursive: true })
+
+  if (!fs.existsSync(dest)) {
+    fs.writeFileSync(
+      dest,
+      '---\ntitle: Posts\n---\n\nimport PostIndex from \'../../components/PostIndex\'\n\n<PostIndex />\n'
+    )
+  }
+
+  const meta_path = path.join(dir, '_meta.json')
+  const pairs = read_meta(meta_path)
+  if (!pairs.some(([k]) => k === 'index')) {
+    write_meta(meta_path, [['index', 'All Posts'], ...pairs])
+  }
 }
 
 
@@ -211,23 +224,20 @@ function write_posts_page(dest_posts) {
 
 console.log(`\nIngesting from: ${SRC}`)
 
-const page_meta  = ingest_static_pages()
-const years_data = ingest_posts()
-const years      = Object.keys(years_data).sort().reverse()
-const post_count = years.reduce((n, y) => n + years_data[y].length, 0)
+const dated_posts = []
+ingest_dir(SRC, PAGES, '', dated_posts)
 
-console.log(`  Copied ${Object.keys(page_meta).length} static pages`)
-console.log(`  Copied ${post_count} posts across ${years.length} years`)
-
-const dest_posts = path.join(PAGES, 'posts')
-write_posts_page(dest_posts)
-write_posts_index(years_data, years)
-write_meta(path.join(PAGES, '_meta.json'), build_top_meta(page_meta, years))
-write_meta(path.join(dest_posts, '_meta.json'), [['index', 'All Posts'], ...years.map(y => [y, y])])
-for (const year of years) {
-  write_meta(path.join(dest_posts, year, '_meta.json'), years_data[year].map(p => [p.slug, p.title]))
+if (!fs.existsSync(path.join(PAGES, 'index.mdx'))) {
+  console.warn('  Warning: no root index page found — place home.md or index.md at the source root for the site to load at /.')
 }
 
-console.log(`  Generated _meta.json for ${years.length + 2} directories`)
-console.log(`  Written public/posts-index.json`)
+console.log(`  Mirrored source tree into pages/`)
+
+if (dated_posts.length) {
+  write_posts_page()
+  write_posts_index(dated_posts)
+  console.log(`  Found ${dated_posts.length} dated pages`)
+  console.log(`  Written public/posts-index.json`)
+}
+
 console.log('Done.\n')

@@ -26,7 +26,7 @@ test('test_build_post_years_exist', () => {
 
 test('test_build_images_copied', () => {
   /** Image assets are present in the exported output. */
-  expect(fs.existsSync(path.join(OUT, 'images', 'pages'))).toBe(true)
+  expect(fs.existsSync(path.join(OUT, 'images'))).toBe(true)
   expect(fs.existsSync(path.join(OUT, 'images', 'posts'))).toBe(true)
 })
 
