@@ -3,7 +3,8 @@
  * Rendered below the page title for any page with a `date` frontmatter field.
  */
 function fmt_date(date_str) {
-  const [year, month, day] = date_str.split('-').map(Number)
+  // Slice to YYYY-MM-DD — gray-matter may serialize date fields as ISO datetime strings
+  const [year, month, day] = String(date_str).slice(0, 10).split('-').map(Number)
   return new Date(year, month - 1, day).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
