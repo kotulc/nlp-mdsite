@@ -61,11 +61,7 @@ rewritten to absolute `/images/...` URLs.
 **Frontmatter fields used by the template**: `title`, `date`, `categories`, `tags`.
 Additional fields are passed through and available in components via Nextra's `frontMatter`.
 
-For local development the default source is `examples/frww`.
-
-> **Current limitation**: The existing ingest script (`scripts/ingest.js`) expects the
-> specific two-level layout of `examples/frww` (`<src>/pages/` and `<src>/posts/<year>/`).
-> Generalizing to arbitrary folder trees is tracked as a planned enhancement — see plan.md.
+For local development the default source is `docs/`.
 
 
 ## Site Content Directory (`pages/`)
@@ -93,6 +89,19 @@ Each page renders frontmatter fields as UI elements:
 - Tags displayed as chips/pills below the page title
 - Reading time and other metrics shown in a page header or sidebar component
 - Metadata fields are opt-in per page via frontmatter keys (spec TBD)
+
+
+## Site Footer
+The footer appears on every page and contains three elements:
+
+1. **Copyright** — `© <year> <site title>` from `site.config.js`
+2. **Last updated** — build timestamp injected at compile time via `NEXT_PUBLIC_BUILD_TIME`
+   (formatted as `Month D, YYYY at H:MM AM/PM UTC`); absent if the env var is not set
+3. **Credits** — "Powered by [nlp-mdsite](...) and [Nextra](...)" with links
+
+**Implementation**: `NEXT_PUBLIC_BUILD_TIME` is set in `next.config.js` as
+`new Date().toISOString()` evaluated at build time. The `SiteFooter` component in
+`theme.config.jsx` reads this env var and formats it client-side via `Intl`.
 
 
 ## Semantic Theming
@@ -153,12 +162,14 @@ on the seed.
 
 ## Deployment
 GitHub Actions workflow (`.github/workflows/deploy.yml`):
-1. `npm install`
-2. `next build && next export`
-3. Push `out/` to `gh-pages` branch
+1. `npm ci`
+2. `npm run ingest` (source from `vars.CONTENT_SOURCE`, default `docs/`)
+3. `npm run build` — Next.js static export → `out/`
+4. Push `out/` to `gh-pages` branch via `peaceiris/actions-gh-pages`
 
-Base path and asset prefix configured via `site.config.js` to support project-page URLs
-(e.g. `username.github.io/repo-name`).
+`basePath` and `assetPrefix` are read from `site.config.js` (`base_path` field) at build time,
+with `BASE_PATH` env var as an optional override. `trailingSlash: true` ensures reliable
+relative-link resolution on static hosts.
 
 
 ## mdpub Integration Points
@@ -176,4 +187,3 @@ Base path and asset prefix configured via `site.config.js` to support project-pa
 - Search result shape: finalize the per-page index JSON schema
 - `site.config.js` full schema: document all expected fields and their types
 - **Nextra v3 / App Router migration**: Nextra v3 uses the Next.js App Router (`app/` directory instead of `pages/`). Migrating would eliminate the confusing `pages/` name for the site content directory, but requires evaluating Nextra v3 stability and any breaking changes in MDX handling, `_meta.json` format, and the theme config API.
-- **Generalized ingest**: The current ingest script expects the `examples/frww` two-level layout; Phase 2b tracks making it work with any source folder structure.

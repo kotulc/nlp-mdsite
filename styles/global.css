@@ -91,3 +91,22 @@ img {
   color: var(--nextra-colors-gray-400, #9ca3af);
   font-style: italic;
 }
+
+/* Site footer: copyright · updated timestamp · credits */
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--nextra-colors-gray-500, #6b7280);
+  text-align: center;
+}
+
+.site-footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.site-footer a:hover { color: var(--nextra-colors-primary-600, #2563eb); }

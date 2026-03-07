@@ -12,4 +12,5 @@ module.exports = withNextra({
   images: { unoptimized: true },
   basePath,
   assetPrefix: basePath,
+  env: { NEXT_PUBLIC_BUILD_TIME: new Date().toISOString() },
 })
