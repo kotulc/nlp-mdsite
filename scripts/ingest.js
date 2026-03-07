@@ -224,6 +224,9 @@ function write_posts_page() {
 
 console.log(`\nIngesting from: ${SRC}`)
 
+fs.rmSync(PAGES,   { recursive: true, force: true })
+fs.rmSync(PUB_IMG, { recursive: true, force: true })
+
 const dated_posts = []
 ingest_dir(SRC, PAGES, '', dated_posts)
 

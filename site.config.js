@@ -1,8 +1,8 @@
 /** Site-level configuration. Populate before running mdpub build or next dev. */
 module.exports = {
-  title: 'Front Range Wheel Works',
-  base_url: '',
-  base_path: '',
+  title: 'nlp-mdsite',
+  base_url: 'https://kotulc.github.io',
+  base_path: '/nlp-mdsite',
 
   // Intelligence layer (Phase 2 — leave empty for defaults)
   content_style: '',  // e.g. 'technical', 'narrative', 'minimal'
