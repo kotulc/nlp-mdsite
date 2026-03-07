@@ -3,9 +3,12 @@ const withNextra = require('nextra')({
   themeConfig: './theme.config.jsx',
 })
 
+const siteConfig = require('./site.config')
+const basePath = process.env.BASE_PATH || siteConfig.base_path || ''
+
 module.exports = withNextra({
   output: 'export',
   images: { unoptimized: true },
-  basePath: process.env.BASE_PATH || '',
-  assetPrefix: process.env.BASE_PATH || '',
+  basePath,
+  assetPrefix: basePath,
 })
