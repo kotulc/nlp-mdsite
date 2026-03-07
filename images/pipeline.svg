@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 120" width="720" height="120" font-family="system-ui, sans-serif">
+  <!-- Boxes -->
+  <rect x="10"  y="30" width="120" height="60" rx="8" fill="#e8f4fd" stroke="#4a9eda" stroke-width="1.5"/>
+  <rect x="165" y="30" width="120" height="60" rx="8" fill="#e8f4fd" stroke="#4a9eda" stroke-width="1.5"/>
+  <rect x="320" y="30" width="120" height="60" rx="8" fill="#e8f4fd" stroke="#4a9eda" stroke-width="1.5"/>
+  <rect x="475" y="30" width="120" height="60" rx="8" fill="#e8f4fd" stroke="#4a9eda" stroke-width="1.5"/>
+  <rect x="590" y="30" width="120" height="60" rx="8" fill="#d4edda" stroke="#28a745" stroke-width="1.5"/>
+
+  <!-- Arrows -->
+  <line x1="130" y1="60" x2="162" y2="60" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="285" y1="60" x2="317" y2="60" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="440" y1="60" x2="472" y2="60" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="595" y1="60" x2="587" y2="60" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- Labels -->
+  <text x="70"  y="55" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a2e">Markdown</text>
+  <text x="70"  y="72" text-anchor="middle" font-size="11" fill="#555">source files</text>
+  <text x="225" y="55" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a2e">Ingest</text>
+  <text x="225" y="72" text-anchor="middle" font-size="11" fill="#555">scripts/ingest.js</text>
+  <text x="380" y="55" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a2e">MDX Pages</text>
+  <text x="380" y="72" text-anchor="middle" font-size="11" fill="#555">pages/ directory</text>
+  <text x="535" y="55" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a2e">Build</text>
+  <text x="535" y="72" text-anchor="middle" font-size="11" fill="#555">next build → out/</text>
+  <text x="650" y="55" text-anchor="middle" font-size="13" font-weight="600" fill="#155724">Deploy</text>
+  <text x="650" y="72" text-anchor="middle" font-size="11" fill="#155724">GitHub Pages</text>
+</svg>
