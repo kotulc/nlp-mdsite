@@ -83,6 +83,26 @@ function rewrite_img_refs(mdx_path, img_url) {
 }
 
 
+function rewrite_md_links(mdx_path, url_base) {
+  /** Rewrite relative markdown links to absolute paths using the page URL base.
+   *  Skips image links (![...]), already-absolute hrefs, and fragment-only refs. */
+  const original = fs.readFileSync(mdx_path, 'utf8')
+  const updated = original.replace(
+    /(?<!\!)\[([^\]]*)\]\(([^)]+)\)/g,
+    (match, text, raw_href) => {
+      const space = raw_href.search(/\s/)
+      const href = space < 0 ? raw_href : raw_href.slice(0, space)
+      const rest = space < 0 ? '' : raw_href.slice(space)
+      if (/^(\/|https?:|mailto:|#)/.test(href)) return match
+      const [link, ...frags] = href.split('#')
+      const fragment = frags.length ? '#' + frags.join('#') : ''
+      return `[${text}](${path.posix.join(url_base, link)}${fragment}${rest})`
+    }
+  )
+  if (updated !== original) fs.writeFileSync(mdx_path, updated)
+}
+
+
 function write_meta(dest_path, entries) {
   /** Write a _meta.json from ordered [key, value] pairs, preserving order.
    *  Plain objects cannot be used — JS engines reorder numeric-like keys. */
@@ -162,8 +182,12 @@ function ingest_dir(src_dir, dest_dir, rel, dated_posts) {
     const base = path.basename(entry, is_mdx ? '.mdx' : '.md')
     const slug = (base === 'home' || base === 'index') ? 'index' : base
     const dest = path.join(dest_dir, `${slug}.mdx`)
+    const url_base = slug === 'index'
+      ? (rel ? `/${rel}/` : '/')
+      : (rel ? `/${rel}/${slug}/` : `/${slug}/`)
     fs.copyFileSync(src_entry, dest)
     rewrite_img_refs(dest, img_url)
+    rewrite_md_links(dest, url_base)
     const mins = add_reading_time(dest)
     const fm   = parse_fm(fs.readFileSync(dest, 'utf8'))
 

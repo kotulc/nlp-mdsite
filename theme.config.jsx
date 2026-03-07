@@ -28,7 +28,8 @@ function SiteFooter() {
   return (
     <div className="site-footer">
       <span>© {new Date().getFullYear()} {siteConfig.title}</span>
-      {formatted && <span>Updated {formatted}</span>}
+      {formatted && <><span className="site-footer-sep">·</span><span>Updated {formatted}</span></>}
+      <span className="site-footer-sep">·</span>
       <span>
         Powered by{' '}
         <a href="https://github.com/kotulc/nlp-mdsite" target="_blank" rel="noopener noreferrer">nlp-mdsite</a>
