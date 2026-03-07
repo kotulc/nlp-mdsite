@@ -95,7 +95,7 @@ module.exports = {
 
 **4. Run setup**
 ```bash
-npm run setup                             # ingest from examples/frww (default)
+npm run setup                             # ingest from docs/ (default)
 npm run setup -- --source path/to/content # ingest from a custom directory
 npm run setup -- --build                  # also run a production build
 ```
@@ -110,6 +110,51 @@ npm run dev        # development server with hot reload
 npm run build      # production build → out/
 npm run preview    # serve the built out/ directory
 ```
+
+
+## Publishing to GitHub Pages
+
+The included workflow (`.github/workflows/deploy.yml`) builds and deploys automatically
+on every push to `main`. Follow these steps to enable it for the first time:
+
+**1. Push to GitHub**
+```bash
+git add .
+git commit -m "Add docs content and configure deployment"
+git push
+```
+
+**2. Enable GitHub Pages** *(one-time setup)*
+
+Go to your repository on GitHub:
+- **Settings → Pages → Build and deployment**
+- Set **Source** to `Deploy from a branch`
+- Set **Branch** to `gh-pages`, folder `/  (root)`
+- Click **Save**
+
+The `gh-pages` branch is created automatically by the workflow on first run.
+
+**3. Set the BASE_PATH variable** *(project pages repos only)*
+
+If your site lives at a subpath (e.g. `username.github.io/repo-name`), set this variable:
+- **Settings → Secrets and variables → Actions → Variables → New repository variable**
+- Name: `BASE_PATH`, Value: `/repo-name` (e.g. `/nlp-mdsite`)
+
+Skip this step if you are deploying to a root domain (`username.github.io`).
+
+**4. Watch the workflow**
+
+Go to the **Actions** tab on GitHub. The "Deploy to GitHub Pages" workflow should be
+running (or complete). Click it to see each step's output. A green checkmark means
+the deploy succeeded.
+
+**5. Access the live site**
+
+Your site will be live at:
+```
+https://<username>.github.io/<repo-name>/
+```
+GitHub Pages can take 1–2 minutes to propagate after the first deploy.
 
 
 ## Roadmap
