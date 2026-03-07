@@ -8,6 +8,7 @@ const basePath = process.env.BASE_PATH || siteConfig.base_path || ''
 
 module.exports = withNextra({
   output: 'export',
+  trailingSlash: true,
   images: { unoptimized: true },
   basePath,
   assetPrefix: basePath,

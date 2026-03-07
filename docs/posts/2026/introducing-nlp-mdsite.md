@@ -24,7 +24,7 @@ is estimated automatically from the word count and injected by the pipeline.
 
 Write your content as plain markdown. Run one command. Get a fully built static site.
 
-The [content pipeline](../../features/content-pipeline) handles the rest:
+The [content pipeline](/features/content-pipeline) handles the rest:
 converting markdown to MDX, copying and path-rewriting images, generating navigation
 metadata, and producing a post index.
 
