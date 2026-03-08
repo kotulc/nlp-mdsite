@@ -6,6 +6,8 @@ module.exports = {
   repo_url: 'https://github.com/kotulc/nlp-mdsite',  // GitHub icon shown in header; leave empty to hide
   theme_toggle: 'navbar',  // where the light/dark/system toggle appears: 'navbar' or 'sidebar'
   feed: true,              // per-page continuation scroll (set false to disable)
+  toc: true,               // right sidebar: "On This Page" section navigation
+  meta_sidebar: true,      // right sidebar: tags, metrics, and related links below the TOC
 
   // Nav ordering: key = directory path from source root ('' = root level)
   // Value = ordered slug array; folders and pages can be mixed; unlisted slugs append alphabetically

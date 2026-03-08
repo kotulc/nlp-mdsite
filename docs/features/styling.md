@@ -102,17 +102,24 @@ built-in styles.
 
 ## Page layout structure
 
-The page layout is set in `theme.config.jsx` via the `main` key. The current
-structure places a right-hand metadata sidebar alongside the page content:
+The `main` key in `theme.config.jsx` wraps only the page content area. Nextra
+renders the left nav and right TOC column outside of `main`, so no custom flex
+layout is needed.
+
+`MetaSidebar` is rendered via `toc.extraContent`, which places it below the
+section headings in Nextra's right TOC column:
 
 ```
-.page-layout   (flex row)
-├── .page-content   (flex: 1, main article)
-└── .meta-sidebar   (180 px, sticky, hidden < 1024 px)
+Nextra layout
+├── Left nav (Nextra)
+├── main  →  PageMeta + page content + PageContinuation
+└── Right TOC column (Nextra)
+    ├── "On This Page" heading list
+    └── .meta-sidebar-content  (tags, metrics, related)
 ```
 
-The sidebar is populated by `MetaSidebar.jsx` using frontmatter fields. It
-renders nothing when no metadata is present.
+`MetaSidebar` returns `null` when no frontmatter metadata is present, so the
+divider and sections only appear on pages that have tags, metrics, or related links.
 
 ## Chip pills
 

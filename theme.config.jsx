@@ -39,14 +39,14 @@ export default {
   head: (
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   ),
+  toc: siteConfig.toc === false
+    ? { component: () => null }
+    : { extraContent: siteConfig.meta_sidebar !== false ? <MetaSidebar /> : undefined },
   main: ({ children }) => (
-    <div className="page-layout">
-      <div className="page-content">
-        <PageMeta />
-        {children}
-        {siteConfig.feed && <PageContinuation />}
-      </div>
-      <MetaSidebar />
-    </div>
+    <>
+      <PageMeta />
+      {children}
+      {siteConfig.feed && <PageContinuation />}
+    </>
   ),
 }

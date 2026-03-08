@@ -29,7 +29,7 @@ appear on every page are registered globally in `theme.config.jsx`.
 |-----------|------|----------------|
 | `PageHeader` | `PageHeader.jsx` | Below page title — date and reading time |
 | `TagList` | `TagList.jsx` | Below `PageHeader` — category and tag chips |
-| `MetaSidebar` | `MetaSidebar.jsx` | Right-hand sticky sidebar |
+| `MetaSidebar` | `MetaSidebar.jsx` | Right TOC column — below section headings (`toc.extraContent`) |
 | `SiteFooter` | `SiteFooter.jsx` | Site-wide footer |
 | `GitHubLink` | `GitHubLink.jsx` | Navbar — circular GitHub icon |
 | `ThemeToggle` | `ThemeToggle.jsx` | Navbar — light/dark/system toggle |

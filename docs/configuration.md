@@ -7,7 +7,7 @@ tags:
   - github-pages
   - env-vars
 readability: 78
-fields: 6
+fields: 9
 related:
   - title: Getting Started
     url: /getting-started
@@ -28,6 +28,9 @@ All site-level settings live in `site.config.js` at the project root.
 | `base_path` | string | Subpath for GitHub Pages repos, e.g. `/repo-name` |
 | `repo_url` | string | GitHub repo link shown as an icon in the header; leave empty to hide |
 | `theme_toggle` | string | Where the light/dark toggle appears: `'navbar'` or `'sidebar'` |
+| `feed` | boolean | Per-page continuation scroll — load the next page inline on scroll |
+| `toc` | boolean | Right sidebar: "On This Page" section navigation (default `true`) |
+| `meta_sidebar` | boolean | Right sidebar: tags, metrics, and related links below the TOC (default `true`) |
 | `nav_order` | object | Explicit nav ordering per directory — see below |
 | `content_style` | string | Phase 2 — semantic style hint, e.g. `technical` |
 | `theme_mood` | string | Phase 2 — visual tone hint, e.g. `calm` |

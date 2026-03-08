@@ -20,7 +20,7 @@ export default function MetaSidebar() {
   if (!categories.length && !tags.length && !metrics.length && !related.length) return null
 
   return (
-    <aside className="meta-sidebar">
+    <div className="meta-sidebar-content">
       {(categories.length > 0 || tags.length > 0) && (
         <div className="meta-sidebar-section">
           <div className="meta-sidebar-label">Tags</div>
@@ -57,6 +57,6 @@ export default function MetaSidebar() {
           ))}
         </div>
       )}
-    </aside>
+    </div>
   )
 }

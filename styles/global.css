@@ -160,20 +160,11 @@ img {
   font-style: italic;
 }
 
-/* Page layout: main content + right metadata sidebar */
-.page-layout {
-  display: flex;
-  gap: 2rem;
-  align-items: flex-start;
-}
-
-.page-content { flex: 1; min-width: 0; }
-
-.meta-sidebar {
-  width: 180px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 4rem;
+/* Metadata sidebar — rendered via toc.extraContent, below the page TOC headings */
+.meta-sidebar-content {
+  border-top: 1px solid var(--nextra-colors-gray-200, #e5e7eb);
+  margin-top: 1rem;
+  padding-top: 1rem;
   font-size: 0.8125rem;
   color: var(--nextra-colors-gray-600, #4b5563);
 }
@@ -207,11 +198,6 @@ img {
 }
 
 .related-link a:hover { text-decoration: underline; }
-
-@media (max-width: 1024px) {
-  .meta-sidebar { display: none; }
-}
-
 
 /* Site footer: copyright · updated timestamp · credits */
 .site-footer {
