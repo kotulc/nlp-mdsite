@@ -1,0 +1,104 @@
+[
+  {
+    "url": "/getting-started",
+    "title": "Getting Started",
+    "date": "",
+    "categories": [
+      "guide"
+    ],
+    "tags": [
+      "setup",
+      "npm",
+      "configuration"
+    ],
+    "reading_time": 1,
+    "content": "# Getting Started\n\n## Prerequisites\n\n- Node.js 18 or later\n- npm (bundled with Node.js)\n- A GitHub repository with Pages enabled\n\n## Setup\n\n**1. Install dependencies**\n\n```bash\nnpm install\n```\n\n**2. Configure the site**\n\nEdit `site.config.js`:\n\n```js\nmodule.exports = {\n  title: 'My Site',\n  base_url: 'https://username.github.io',\n  base_path: '/repo-name',\n}\n```\n\n**3. Organize your content**\n\nPlace markdown files in any directory. Subdirectories become URL segments.\nA `home.md` or `index.md` at any level becomes that section's landing page.\n\n```\nsource/\n├── home.md\n├── about.md\n├── images/\n└── posts/\n    └── 2026/\n        └── my-first-post.md\n```\n\n**4. Run setup**\n\n```bash\nnpm run setup -- --source path/to/source\n```\n\nThis ingests content, rewrites image paths, and generates navigation files.\n\n**5. Preview locally**\n\n```bash\nnpm run dev\n```\n\n## Frontmatter fields\n\nAdd these to the top of any markdown file to control how it is displayed:\n\n```yaml\n---\ntitle: My Page\ndate: 2026-01-15\ncategories:\n  - tutorial\ntags:\n  - markdown\n---\n```\n\n| Field | Required | Notes |\n|-------|----------|-------|\n| `title` | recommended | Falls back to the file slug |\n| `date` | optional | Enables date sorting and the post index |\n| `categories` | optional | Rendered as blue chip pills |\n| `tags` | optional | Rendered as gray chip pills |\n| `reading_time` | auto | Injected by the pipeline — do not set manually |"
+  },
+  {
+    "url": "/configuration",
+    "title": "Configuration",
+    "date": "",
+    "categories": [
+      "reference"
+    ],
+    "tags": [
+      "site-config",
+      "github-pages",
+      "env-vars"
+    ],
+    "reading_time": 1,
+    "content": "# Configuration\n\nAll site-level settings live in `site.config.js` at the project root.\n\n## Fields\n\n| Field | Type | Description |\n|-------|------|-------------|\n| `title` | string | Site name — shown in the logo, footer, and page titles |\n| `base_url` | string | Deployed domain, e.g. `https://user.github.io` |\n| `base_path` | string | Subpath for GitHub Pages repos, e.g. `/repo-name` |\n| `repo_url` | string | GitHub repo link shown as an icon in the header; leave empty to hide |\n| `theme_toggle` | string | Where the light/dark toggle appears: `'navbar'` or `'sidebar'` |\n| `nav_order` | object | Explicit nav ordering per directory — see below |\n| `content_style` | string | Phase 2 — semantic style hint, e.g. `technical` |\n| `theme_mood` | string | Phase 2 — visual tone hint, e.g. `calm` |\n| `logo_seed` | integer | Phase 2 — increment to regenerate the procedural logo |\n\nExample:\n\n```js\nmodule.exports = {\n  title: 'My Site',\n  base_url: 'https://myuser.github.io',\n  base_path: '/my-repo',\n}\n```\n\n## Nav ordering\n\nBy default the pipeline sorts pages newest-first by `date`, or alphabetically.\nUse `nav_order` to define explicit ordering at any directory level:\n\n```js\nnav_order: {\n  // '' = source root; 'features' = the features/ subdirectory\n  '': ['getting-started', 'configuration', 'features', 'posts'],\n  'features': ['content-pipeline', 'metadata', 'deployment'],\n},\n```\n\nFolders and pages can be mixed in the same list. Slugs not listed append alphabetically\nafter the explicit entries.\n\nFor individual pages without a full directory listing, add `order: N` to the page's\nfrontmatter instead — lower numbers appear first, pages without `order` sort after.\n\n## GitHub Actions variables\n\nThe deployment workflow reads two optional repository variables.\nSet them under **Settings → Secrets and variables → Actions → Variables**.\n\n| Variable | Default | Description |\n|----------|---------|-------------|\n| `CONTENT_SOURCE` | `docs` | Path to content directory, relative to repo root |\n| `BASE_PATH` | _(empty)_ | GitHub Pages base path, passed to Next.js at build time |\n\n`BASE_PATH` is required whenever your site lives at a subpath (e.g. `username.github.io/repo-name`).\nLeave it empty for root domain deployments."
+  },
+  {
+    "url": "/features/",
+    "title": "Features",
+    "date": "",
+    "categories": [
+      "features"
+    ],
+    "tags": [
+      "overview"
+    ],
+    "reading_time": 1,
+    "content": "# Features\n\nnlp-mdsite is a thin, opinionated layer on top of Next.js and Nextra. Each feature\nis either automatic (no configuration needed) or driven by a single frontmatter field.\n\n- [Content Pipeline](/features/content-pipeline) — how markdown becomes a static site\n- [Metadata Display](/features/metadata) — dates, reading time, tags, and categories\n- [Deployment](/features/deployment) — GitHub Actions workflow for GitHub Pages"
+  },
+  {
+    "url": "/features/content-pipeline",
+    "title": "Content Pipeline",
+    "date": "",
+    "categories": [
+      "features"
+    ],
+    "tags": [
+      "ingest",
+      "images",
+      "routing"
+    ],
+    "reading_time": 1,
+    "content": "# Content Pipeline\n\nThe content pipeline (`scripts/ingest.js`) mirrors a markdown source tree into\nthe Next.js `pages/` directory. Run it directly:\n\n    npm run ingest -- path/to/source\n\nOr use the setup command, which also validates your environment:\n\n    npm run setup -- --source path/to/source\n\n## What the pipeline does\n\n1. **Converts `.md` → `.mdx`** — any file named `home.md` or `index.md` becomes\n   `index.mdx` (the section's landing page). All other files keep their slug.\n\n2. **Copies images** — an `images/` folder next to any `.md` files is copied to\n   `public/images/<relative-path>/`.\n\n3. **Rewrites image refs** — `](/images/features/photo.jpg)` becomes `](/images/rel/path/photo.jpg)`\n   so images resolve correctly from any URL depth.\n\n4. **Strips corrupt EXIF** — JPEG files with broken EXIF segments are cleaned\n   automatically (`scripts/fix-exif.js`).\n\n5. **Injects reading time** — word count ÷ 200, minimum 1 minute, written into\n   the page's frontmatter as `reading_time`.\n\n6. **Generates `_meta.json`** — navigation ordering at every directory level.\n   Pages with dates are sorted newest-first. Directories of 4-digit year slugs\n   (e.g. `2020/`, `2023/`) are sorted descending. All others are alphabetical.\n\n7. **Writes `posts-index.json`** — all dated pages that are not at the source root\n   are collected into `public/posts-index.json`, sorted newest-first. This powers\n   the PostIndex component on the auto-generated `/posts` page.\n\n## Source layout rules\n\n- Any folder structure is valid — depth is unlimited\n- `home.md` or `index.md` at any level → that section's landing page\n- Root-level `home.md` → the site home page at `/`\n- `images/` next to `.md` files → copied and path-rewritten automatically\n- Root-level pages with `date` fields are treated as site pages, not blog posts"
+  },
+  {
+    "url": "/features/metadata",
+    "title": "Metadata Display",
+    "date": "",
+    "categories": [
+      "features"
+    ],
+    "tags": [
+      "frontmatter",
+      "tags",
+      "reading-time"
+    ],
+    "reading_time": 2,
+    "content": "# Metadata Display\n\nMetadata is surfaced automatically on every page — no MDX imports required.\nAll display is driven by frontmatter fields read by `theme.config.jsx`.\n\n## Frontmatter schema\n\n| Field | Type | Effect |\n|-------|------|--------|\n| `title` | string | Page title shown in heading and nav |\n| `date` | YYYY-MM-DD | Formatted date below title; enables date-based sorting |\n| `order` | integer | Nav position within its directory; lower numbers appear first |\n| `categories` | list | Blue chip pills below the title |\n| `tags` | list | Gray chip pills below the title |\n| `reading_time` | integer | Auto-injected by the pipeline; displays as \"N min read\" |\n\nExample:\n\n```yaml\n---\ntitle: My Post\ndate: 2026-01-15\ncategories:\n  - tutorial\ntags:\n  - markdown\n  - nextjs\n---\n```\n\n## Components\n\n**`PageHeader`** renders the formatted date and reading time on a single line,\nseparated by a center dot. Returns null when neither field is present.\n\n**`TagList`** renders categories (blue) and tags (gray) as pill chips.\nBoth arrays are optional; the component returns null when both are empty.\n\n**`PostIndex`** fetches `posts-index.json` at runtime and renders a listing of\nall dated posts with title, date, reading time, and category chips. It is placed\non the auto-generated `posts/index.mdx` page whenever dated posts are found.\n\n**`MetaSidebar`** renders a sticky right-hand sidebar with categories, tags, and\nany numeric frontmatter fields as labelled metrics. It only appears when there is\ncontent to show, and is hidden on screens narrower than 1024 px.\n\n**`SiteFooter`** renders the page footer (copyright, build timestamp, credits).\nEdit `components/SiteFooter.jsx` directly to customize the footer across all pages.\n\n## Metrics\n\nAny numeric frontmatter field not in the reserved set (`title`, `date`, `categories`,\n`tags`, `reading_time`) is displayed in the sidebar as a metric with its score:\n\n```yaml\n---\ntitle: My Analysis\nreadability: 72\nsentiment: 0.85\ncomplexity: 3\n---\n```\n\nField names use underscores which are replaced with spaces in the display\n(e.g. `reading_ease` → \"reading ease\").\n\n## Post index\n\nAny source file with a `date` field that is not at the source root is included\nin `public/posts-index.json`. The file is sorted newest-first and served as a\nstatic asset, so the PostIndex component can fetch it client-side without any\nserver-side rendering."
+  },
+  {
+    "url": "/features/deployment",
+    "title": "Deployment",
+    "date": "",
+    "categories": [
+      "features"
+    ],
+    "tags": [
+      "github-actions",
+      "github-pages"
+    ],
+    "reading_time": 1,
+    "content": "# Deployment\n\nnlp-mdsite deploys to GitHub Pages automatically via a single GitHub Actions workflow.\n\n## Workflow overview\n\nThe workflow (`.github/workflows/deploy.yml`) runs on every push to `main`:\n\n1. Checks out the repository\n2. Installs Node.js 18 and npm dependencies (`npm ci`)\n3. Runs `npm run ingest` against the configured content source\n4. Runs `npm run build` — Next.js static export → `out/`\n5. Pushes `out/` to the `gh-pages` branch via `peaceiris/actions-gh-pages`\n\n## Configuration\n\nSet these as **repository variables** under Settings → Secrets and variables → Actions → Variables:\n\n| Variable | Example | Notes |\n|----------|---------|-------|\n| `CONTENT_SOURCE` | `docs` | Path to content relative to repo root (default: `docs`) |\n| `BASE_PATH` | `/nlp-mdsite` | Required for project Pages repos; empty for root domains |\n\n## Enabling GitHub Pages\n\n1. Go to **Settings → Pages**\n2. Set **Source** to the `gh-pages` branch, `/ (root)` folder\n3. Push to `main` to trigger the first deploy\n\n## Manual trigger\n\nThe workflow also supports `workflow_dispatch`, so you can re-deploy at any\ntime from the **Actions** tab without pushing a new commit.\n\n## Local build\n\n    npm run build      # production build → out/\n    npm run preview    # serve the out/ directory locally"
+  },
+  {
+    "url": "/posts/introducing-nlp-mdsite",
+    "title": "Introducing nlp-mdsite",
+    "date": "2026-03-07",
+    "categories": [
+      "announcement"
+    ],
+    "tags": [
+      "markdown",
+      "nextjs",
+      "static-site"
+    ],
+    "reading_time": 1,
+    "content": "# Introducing nlp-mdsite\n\nThis site is built with nlp-mdsite — a static site template for publishing markdown\ncontent with zero per-page configuration.\n\n![Rendered page preview](/images/posts/example.svg)\n\nEverything you see on this page is driven by the frontmatter at the top of this\nmarkdown file: the date, the \"announcement\" category chip, and the tags. Reading time\nis estimated automatically from the word count and injected by the pipeline.\n\n## How it works\n\nWrite your content as plain markdown. Run one command. Get a fully built static site.\n\nThe [content pipeline](/features/content-pipeline) handles the rest:\nconverting markdown to MDX, copying and path-rewriting images, generating navigation\nmetadata, and producing a post index.\n\n## Source structure\n\nThis post lives at `docs/posts/2026/introducing-nlp-mdsite.md` in the repository.\nThe pipeline mirrors it to `pages/posts/2026/introducing-nlp-mdsite.mdx` and adds it\nto `posts-index.json`, so it appears in the [Posts](/posts) index automatically.\n\nThe image above (`images/example.svg`) is stored next to this file at\n`docs/posts/2026/images/example.svg`. The pipeline copies it to\n`public/images/posts/2026/example.svg` and rewrites the reference to an absolute path.\n\n## Next steps\n\n- Read the [Getting Started](/getting-started) guide\n- Browse the [Features](/features) section\n- Fork the repo and point it at your own content"
+  }
+]
