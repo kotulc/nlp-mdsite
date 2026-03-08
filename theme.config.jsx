@@ -5,6 +5,7 @@ import MetaSidebar from './components/MetaSidebar'
 import SiteFooter from './components/SiteFooter'
 import GitHubLink from './components/GitHubLink'
 import ThemeToggle from './components/ThemeToggle'
+import PageContinuation from './components/PageContinuation'
 import siteConfig from './site.config'
 
 
@@ -43,6 +44,7 @@ export default {
       <div className="page-content">
         <PageMeta />
         {children}
+        {siteConfig.feed && <PageContinuation />}
       </div>
       <MetaSidebar />
     </div>

@@ -1,5 +1,35 @@
 /* Mobile-first global styles for nlp-mdsite */
 
+/* Per-page continuation feed */
+.feed-section { margin-top: 2rem; }
+
+.feed-section-divider {
+  border-top: 2px solid var(--nextra-colors-gray-200, #e5e7eb);
+  margin: 2rem 0;
+}
+
+.feed-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.feed-section-title a { color: inherit; text-decoration: none; }
+
+.feed-section-title a:hover { text-decoration: underline; }
+
+.feed-section-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--nextra-colors-gray-500, #6b7280);
+  margin-bottom: 1.25rem;
+}
+
+.feed-sentinel { height: 1px; }
+
+
 /* GitHub header icon */
 .github-link {
   display: flex;

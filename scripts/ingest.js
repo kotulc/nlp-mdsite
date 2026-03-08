@@ -244,25 +244,50 @@ function write_posts_index(dated_posts) {
 }
 
 
-function write_posts_page() {
-  /** Ensure pages/posts/index.mdx exists for the PostIndex component.
-   *  Also ensures _meta.json for posts/ starts with an 'index' entry. */
-  const dir  = path.join(PAGES, 'posts')
-  const dest = path.join(dir, 'index.mdx')
-  fs.mkdirSync(dir, { recursive: true })
+function extract_content(mdx) {
+  /** Strip frontmatter, import lines, and bare JSX component tags from MDX. */
+  return mdx
+    .replace(/^---[\s\S]*?---\n/, '')
+    .replace(/^import\s+.+$/gm, '')
+    .replace(/^<[A-Z][^\n>]*\/>\s*$/gm, '')
+    .trim()
+}
 
-  if (!fs.existsSync(dest)) {
-    fs.writeFileSync(
-      dest,
-      '---\ntitle: Posts\n---\n\nimport PostIndex from \'../../components/PostIndex\'\n\n<PostIndex />\n'
-    )
-  }
 
-  const meta_path = path.join(dir, '_meta.json')
-  const pairs = read_meta(meta_path)
-  if (!pairs.some(([k]) => k === 'index')) {
-    write_meta(meta_path, [['index', 'All Posts'], ...pairs])
+function collect_feed_pages(dir, prefix) {
+  /** Walk pages/ via _meta.json files, returning all pages in nav order with content.
+   *  prefix: URL path prefix for this directory level ('' for root). */
+  const pages = []
+  for (const [slug, title] of read_meta(path.join(dir, '_meta.json'))) {
+    if (prefix === '' && slug === 'index') continue  // skip root home page
+    const sub_dir = path.join(dir, slug)
+    if (fs.existsSync(sub_dir) && fs.statSync(sub_dir).isDirectory()) {
+      pages.push(...collect_feed_pages(sub_dir, `${prefix}/${slug}`))
+    } else {
+      const mdx_path = path.join(dir, `${slug}.mdx`)
+      if (!fs.existsSync(mdx_path)) continue
+      const mdx = fs.readFileSync(mdx_path, 'utf8')
+      const fm  = parse_fm(mdx)
+      pages.push({
+        url:          slug === 'index' ? `${prefix}/` : `${prefix}/${slug}`,
+        title:        fm.title || title,
+        date:         fm.date  || '',
+        categories:   Array.isArray(fm.categories) ? fm.categories : [],
+        tags:         Array.isArray(fm.tags)        ? fm.tags       : [],
+        reading_time: fm.reading_time ? Number(fm.reading_time) : null,
+        content:      extract_content(mdx),
+      })
+    }
   }
+  return pages
+}
+
+
+function write_feed_index() {
+  /** Write public/feed-index.json — all pages in nav order with content for the feed. */
+  const pages = collect_feed_pages(PAGES, '')
+  fs.mkdirSync(PUB_DIR, { recursive: true })
+  fs.writeFileSync(path.join(PUB_DIR, 'feed-index.json'), JSON.stringify(pages, null, 2) + '\n')
 }
 
 
@@ -283,10 +308,14 @@ if (!fs.existsSync(path.join(PAGES, 'index.mdx'))) {
 console.log(`  Mirrored source tree into pages/`)
 
 if (dated_posts.length) {
-  write_posts_page()
   write_posts_index(dated_posts)
   console.log(`  Found ${dated_posts.length} dated pages`)
   console.log(`  Written public/posts-index.json`)
+}
+
+if (siteConfig.feed) {
+  write_feed_index()
+  console.log('  Written public/feed-index.json')
 }
 
 console.log('Done.\n')
