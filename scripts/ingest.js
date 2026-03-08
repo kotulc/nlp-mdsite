@@ -305,6 +305,9 @@ if (!fs.existsSync(path.join(PAGES, 'index.mdx'))) {
   console.warn('  Warning: no root index page found — place home.md or index.md at the source root for the site to load at /.')
 }
 
+const app_src = path.join(ROOT, '_app.jsx')
+if (fs.existsSync(app_src)) fs.copyFileSync(app_src, path.join(PAGES, '_app.jsx'))
+
 console.log(`  Mirrored source tree into pages/`)
 
 if (dated_posts.length) {

@@ -12,7 +12,7 @@ module.exports = {
   // Per-page: add `order: N` to a page's frontmatter for ordering without touching this file
   nav_order: {
     '': ['getting-started', 'configuration', 'features', 'posts'],
-    'features': ['content-pipeline', 'metadata', 'deployment'],
+    'features': ['content-pipeline', 'metadata', 'styling', 'deployment'],
   },
 
   // Intelligence layer (Phase 2 — leave empty for defaults)
