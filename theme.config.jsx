@@ -3,6 +3,7 @@ import PageHeader from './components/PageHeader'
 import TagList from './components/TagList'
 import MetaSidebar from './components/MetaSidebar'
 import SiteFooter from './components/SiteFooter'
+import GitHubLink from './components/GitHubLink'
 import siteConfig from './site.config'
 
 
@@ -20,6 +21,7 @@ function PageMeta() {
 
 export default {
   logo: <span style={{ fontWeight: 600 }}>{siteConfig.title}</span>,
+  navbar: { extraContent: <GitHubLink /> },
   footer: { text: <SiteFooter /> },
   useNextSeoProps() {
     return { titleTemplate: `%s – ${siteConfig.title}` }
