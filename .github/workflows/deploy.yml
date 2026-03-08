@@ -24,7 +24,9 @@ jobs:
         run: npm ci
 
       - name: Ingest content
-        run: npm run ingest -- ${{ vars.CONTENT_SOURCE || 'docs' }}
+        run: |
+          SRC="${{ vars.CONTENT_SOURCE }}"
+          npm run ingest ${SRC:+-- "$SRC"}
 
       - name: Build
         run: npm run build

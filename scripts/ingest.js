@@ -10,7 +10,7 @@
  *   - Writes public/posts-index.json for all pages with a date field
  *
  * Usage: node scripts/ingest.js [source-dir]
- *        Default source-dir: examples/frww
+ *        Default source-dir: docs/  (omit arg to also sync README.md → /about)
  */
 const fs = require('fs')
 const path = require('path')
@@ -19,7 +19,7 @@ const siteConfig = require('../site.config')
 
 
 const ROOT    = path.join(__dirname, '..')
-const SRC     = path.resolve(process.argv[2] || path.join(ROOT, 'examples/frww'))
+const SRC     = path.resolve(process.argv[2] || path.join(ROOT, 'docs'))
 const PAGES   = path.join(ROOT, 'pages')
 const PUB_IMG = path.join(ROOT, 'public', 'images')
 const PUB_DIR = path.join(ROOT, 'public')
@@ -291,6 +291,29 @@ function write_feed_index() {
 }
 
 
+function sync_readme() {
+  /** Sync README.md → pages/about.mdx and inject its entry into root _meta.json.
+   *  Strips the leading H1 (duplicates the frontmatter title) before writing. */
+  const readme_path = path.join(ROOT, 'README.md')
+  if (!fs.existsSync(readme_path)) return
+
+  let body = fs.readFileSync(readme_path, 'utf8').replace(/^#[^\n]*\n/, '')
+  const mdx = `---\ntitle: About\ncategories:\n  - site\ntags:\n  - readme\n---\n\n${body}`
+  const out = path.join(PAGES, 'about.mdx')
+  fs.writeFileSync(out, mdx)
+  add_reading_time(out)
+
+  // Inject 'About' into root _meta.json after 'index' if not already present
+  const meta_path = path.join(PAGES, '_meta.json')
+  const entries = read_meta(meta_path)
+  if (!entries.find(([k]) => k === 'about')) {
+    const idx = entries.findIndex(([k]) => k === 'index')
+    entries.splice(idx >= 0 ? idx + 1 : 0, 0, ['about', 'About'])
+    write_meta(meta_path, entries)
+  }
+}
+
+
 // --- Main ---
 
 console.log(`\nIngesting from: ${SRC}`)
@@ -307,6 +330,8 @@ if (!fs.existsSync(path.join(PAGES, 'index.mdx'))) {
 
 const app_src = path.join(ROOT, '_app.jsx')
 if (fs.existsSync(app_src)) fs.copyFileSync(app_src, path.join(PAGES, '_app.jsx'))
+
+if (!process.argv[2]) sync_readme()
 
 console.log(`  Mirrored source tree into pages/`)
 
