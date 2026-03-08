@@ -17,6 +17,26 @@
   color: var(--nextra-colors-gray-900, #111827);
 }
 
+/* Theme toggle (light/dark/system) */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--nextra-colors-gray-600, #4b5563);
+  transition: background 0.15s, color 0.15s;
+}
+
+.theme-toggle:hover {
+  background: var(--nextra-colors-gray-100, #f3f4f6);
+  color: var(--nextra-colors-gray-900, #111827);
+}
+
 
 /* Responsive images */
 img {

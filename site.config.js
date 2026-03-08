@@ -4,6 +4,7 @@ module.exports = {
   base_url: 'https://kotulc.github.io',
   base_path: '/nlp-mdsite',
   repo_url: 'https://github.com/kotulc/nlp-mdsite',  // GitHub icon shown in header; leave empty to hide
+  theme_toggle: 'navbar',  // where the light/dark/system toggle appears: 'navbar' or 'sidebar'
 
   // Intelligence layer (Phase 2 — leave empty for defaults)
   content_style: '',  // e.g. 'technical', 'narrative', 'minimal'
