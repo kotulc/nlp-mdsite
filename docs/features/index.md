@@ -1,5 +1,17 @@
 ---
 title: Features
+categories:
+  - features
+tags:
+  - overview
+topics: 3
+related:
+  - title: Content Pipeline
+    url: /features/content-pipeline
+  - title: Metadata Display
+    url: /features/metadata
+  - title: Deployment
+    url: /features/deployment
 ---
 
 # Features

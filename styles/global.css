@@ -131,6 +131,15 @@ img {
 
 .metric-score { font-weight: 600; }
 
+.related-link { padding: 0.125rem 0; }
+
+.related-link a {
+  color: var(--nextra-colors-primary-600, #2563eb);
+  text-decoration: none;
+}
+
+.related-link a:hover { text-decoration: underline; }
+
 @media (max-width: 1024px) {
   .meta-sidebar { display: none; }
 }

@@ -7,6 +7,13 @@ tags:
   - markdown
   - nextjs
   - static-site
+readability: 88
+complexity: 1
+related:
+  - title: Getting Started
+    url: /getting-started
+  - title: Features
+    url: /features
 ---
 
 # Introducing nlp-mdsite

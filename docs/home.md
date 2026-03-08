@@ -1,5 +1,17 @@
 ---
 title: nlp-mdsite
+categories:
+  - site
+tags:
+  - nextjs
+  - markdown
+  - static-site
+readability: 88
+related:
+  - title: Getting Started
+    url: /getting-started
+  - title: Features
+    url: /features
 ---
 
 # nlp-mdsite

@@ -6,18 +6,18 @@
 import { useConfig } from 'nextra-theme-docs'
 
 
-const RESERVED = new Set(['title', 'date', 'categories', 'tags', 'reading_time'])
+const RESERVED = new Set(['title', 'date', 'categories', 'tags', 'reading_time', 'related'])
 
 
 export default function MetaSidebar() {
   const { frontMatter } = useConfig()
-  const { categories = [], tags = [] } = frontMatter
+  const { categories = [], tags = [], related = [] } = frontMatter
 
   const metrics = Object.entries(frontMatter).filter(
     ([key, val]) => !RESERVED.has(key) && typeof val === 'number'
   )
 
-  if (!categories.length && !tags.length && !metrics.length) return null
+  if (!categories.length && !tags.length && !metrics.length && !related.length) return null
 
   return (
     <aside className="meta-sidebar">
@@ -42,6 +42,17 @@ export default function MetaSidebar() {
             <div key={key} className="metric-row">
               <span className="metric-key">{key.replace(/_/g, ' ')}</span>
               <span className="metric-score">{val}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {related.length > 0 && (
+        <div className="meta-sidebar-section">
+          <div className="meta-sidebar-label">Related</div>
+          {related.map(({ title, url }) => (
+            <div key={url} className="related-link">
+              <a href={url}>{title}</a>
             </div>
           ))}
         </div>

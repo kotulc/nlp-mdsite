@@ -5,6 +5,13 @@ categories:
 tags:
   - github-actions
   - github-pages
+readability: 80
+steps: 5
+related:
+  - title: Configuration
+    url: /configuration
+  - title: Content Pipeline
+    url: /features/content-pipeline
 ---
 
 # Deployment

@@ -1,5 +1,18 @@
 ---
 title: Getting Started
+categories:
+  - guide
+tags:
+  - setup
+  - npm
+  - configuration
+readability: 85
+complexity: 2
+related:
+  - title: Configuration
+    url: /configuration
+  - title: Features
+    url: /features
 ---
 
 # Getting Started

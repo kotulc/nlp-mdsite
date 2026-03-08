@@ -6,6 +6,13 @@ tags:
   - ingest
   - images
   - routing
+readability: 72
+steps: 7
+related:
+  - title: Metadata Display
+    url: /features/metadata
+  - title: Getting Started
+    url: /getting-started
 ---
 
 # Content Pipeline

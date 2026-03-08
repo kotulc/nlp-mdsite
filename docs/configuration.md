@@ -1,5 +1,18 @@
 ---
 title: Configuration
+categories:
+  - reference
+tags:
+  - site-config
+  - github-pages
+  - env-vars
+readability: 78
+fields: 6
+related:
+  - title: Getting Started
+    url: /getting-started
+  - title: Deployment
+    url: /features/deployment
 ---
 
 # Configuration

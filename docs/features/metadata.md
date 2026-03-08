@@ -6,6 +6,14 @@ tags:
   - frontmatter
   - tags
   - reading-time
+readability: 76
+fields: 5
+components: 5
+related:
+  - title: Getting Started
+    url: /getting-started
+  - title: Content Pipeline
+    url: /features/content-pipeline
 ---
 
 # Metadata Display
