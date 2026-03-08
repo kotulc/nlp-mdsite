@@ -27,6 +27,7 @@ All display is driven by frontmatter fields read by `theme.config.jsx`.
 |-------|------|--------|
 | `title` | string | Page title shown in heading and nav |
 | `date` | YYYY-MM-DD | Formatted date below title; enables date-based sorting |
+| `order` | integer | Nav position within its directory; lower numbers appear first |
 | `categories` | list | Blue chip pills below the title |
 | `tags` | list | Gray chip pills below the title |
 | `reading_time` | integer | Auto-injected by the pipeline; displays as "N min read" |

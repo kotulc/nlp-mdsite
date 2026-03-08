@@ -15,6 +15,7 @@
 const fs = require('fs')
 const path = require('path')
 const { strip_dir } = require('./fix-exif')
+const siteConfig = require('../site.config')
 
 
 const ROOT    = path.join(__dirname, '..')
@@ -121,19 +122,39 @@ function read_meta(meta_path) {
 }
 
 
-function sort_entries(entries) {
-  /** Sort: index first, then newest-first by date (if any have dates); else alpha.
-   *  Exception: if all non-index slugs look like 4-digit years, sort descending. */
+function sort_entries(entries, rel) {
+  /** Sort: nav_order config > frontmatter order > date/year/alpha. */
   const idx  = entries.filter(e => e.slug === 'index')
   const rest = entries.filter(e => e.slug !== 'index')
-  const has_dates  = rest.some(e => e.date)
-  const all_years  = !has_dates && rest.length > 0 && rest.every(e => /^\d{4}$/.test(e.slug))
 
-  rest.sort(
-    has_dates ? (a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug)
-    : all_years ? (a, b) => b.slug.localeCompare(a.slug)
-    : (a, b) => a.slug.localeCompare(b.slug)
-  )
+  const explicit = (siteConfig.nav_order || {})[rel]
+  if (explicit) {
+    const rank = Object.fromEntries(explicit.map((s, i) => [s, i]))
+    rest.sort((a, b) => {
+      const ar = rank[a.slug] ?? Infinity
+      const br = rank[b.slug] ?? Infinity
+      return ar !== br ? ar - br : a.slug.localeCompare(b.slug)
+    })
+    return [...idx, ...rest]
+  }
+
+  const has_order = rest.some(e => e.order != null)
+  const has_dates = rest.some(e => e.date)
+  const all_years = !has_dates && rest.length > 0 && rest.every(e => /^\d{4}$/.test(e.slug))
+
+  if (has_order) {
+    rest.sort((a, b) => {
+      const ao = a.order ?? Infinity
+      const bo = b.order ?? Infinity
+      return ao !== bo ? ao - bo : a.slug.localeCompare(b.slug)
+    })
+  } else {
+    rest.sort(
+      has_dates  ? (a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug)
+      : all_years ? (a, b) => b.slug.localeCompare(a.slug)
+      : (a, b) => a.slug.localeCompare(b.slug)
+    )
+  }
   return [...idx, ...rest]
 }
 
@@ -198,6 +219,7 @@ function ingest_dir(src_dir, dest_dir, rel, dated_posts) {
       slug,
       title:        fm.title        || slug,
       date:         fm.date         || '',
+      order:        fm.order != null ? Number(fm.order) : null,
       categories:   Array.isArray(fm.categories) ? fm.categories : [],
       tags:         Array.isArray(fm.tags)        ? fm.tags        : [],
       reading_time: mins,
@@ -208,7 +230,7 @@ function ingest_dir(src_dir, dest_dir, rel, dated_posts) {
     if (slug === 'index') dir_title = record.title
   }
 
-  const sorted = sort_entries(entries)
+  const sorted = sort_entries(entries, rel)
   write_meta(path.join(dest_dir, '_meta.json'), sorted.map(e => [e.slug, e.title]))
   return { title: dir_title }
 }

@@ -26,6 +26,9 @@ All site-level settings live in `site.config.js` at the project root.
 | `title` | string | Site name — shown in the logo, footer, and page titles |
 | `base_url` | string | Deployed domain, e.g. `https://user.github.io` |
 | `base_path` | string | Subpath for GitHub Pages repos, e.g. `/repo-name` |
+| `repo_url` | string | GitHub repo link shown as an icon in the header; leave empty to hide |
+| `theme_toggle` | string | Where the light/dark toggle appears: `'navbar'` or `'sidebar'` |
+| `nav_order` | object | Explicit nav ordering per directory — see below |
 | `content_style` | string | Phase 2 — semantic style hint, e.g. `technical` |
 | `theme_mood` | string | Phase 2 — visual tone hint, e.g. `calm` |
 | `logo_seed` | integer | Phase 2 — increment to regenerate the procedural logo |
@@ -39,6 +42,25 @@ module.exports = {
   base_path: '/my-repo',
 }
 ```
+
+## Nav ordering
+
+By default the pipeline sorts pages newest-first by `date`, or alphabetically.
+Use `nav_order` to define explicit ordering at any directory level:
+
+```js
+nav_order: {
+  // '' = source root; 'features' = the features/ subdirectory
+  '': ['getting-started', 'configuration', 'features', 'posts'],
+  'features': ['content-pipeline', 'metadata', 'deployment'],
+},
+```
+
+Folders and pages can be mixed in the same list. Slugs not listed append alphabetically
+after the explicit entries.
+
+For individual pages without a full directory listing, add `order: N` to the page's
+frontmatter instead — lower numbers appear first, pages without `order` sort after.
 
 ## GitHub Actions variables
 
