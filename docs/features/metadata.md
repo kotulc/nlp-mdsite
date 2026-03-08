@@ -49,6 +49,30 @@ Both arrays are optional; the component returns null when both are empty.
 all dated posts with title, date, reading time, and category chips. It is placed
 on the auto-generated `posts/index.mdx` page whenever dated posts are found.
 
+**`MetaSidebar`** renders a sticky right-hand sidebar with categories, tags, and
+any numeric frontmatter fields as labelled metrics. It only appears when there is
+content to show, and is hidden on screens narrower than 1024 px.
+
+**`SiteFooter`** renders the page footer (copyright, build timestamp, credits).
+Edit `components/SiteFooter.jsx` directly to customize the footer across all pages.
+
+## Metrics
+
+Any numeric frontmatter field not in the reserved set (`title`, `date`, `categories`,
+`tags`, `reading_time`) is displayed in the sidebar as a metric with its score:
+
+```yaml
+---
+title: My Analysis
+readability: 72
+sentiment: 0.85
+complexity: 3
+---
+```
+
+Field names use underscores which are replaced with spaces in the display
+(e.g. `reading_ease` → "reading ease").
+
 ## Post index
 
 Any source file with a `date` field that is not at the source root is included
