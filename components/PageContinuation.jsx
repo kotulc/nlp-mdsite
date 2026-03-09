@@ -7,6 +7,32 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
+
+/** react-markdown component map using Nextra's exact nx- Tailwind classes. */
+const md_components = {
+  h2: ({ children }) => <h2 className="nx-font-semibold nx-tracking-tight nx-text-slate-900 dark:nx-text-slate-100 nx-mt-10 nx-border-b nx-pb-1 nx-text-3xl nx-border-neutral-200/70 dark:nx-border-primary-100/10">{children}</h2>,
+  h3: ({ children }) => <h3 className="nx-font-semibold nx-tracking-tight nx-text-slate-900 dark:nx-text-slate-100 nx-mt-8 nx-text-2xl">{children}</h3>,
+  h4: ({ children }) => <h4 className="nx-font-semibold nx-tracking-tight nx-text-slate-900 dark:nx-text-slate-100 nx-mt-8 nx-text-xl">{children}</h4>,
+  p:  ({ children }) => <p className="nx-mt-6 nx-leading-7 first:nx-mt-0">{children}</p>,
+  ul: ({ children }) => <ul className="nx-mt-6 nx-list-disc first:nx-mt-0 ltr:nx-ml-6">{children}</ul>,
+  ol: ({ children }) => <ol className="nx-mt-6 nx-list-decimal first:nx-mt-0 ltr:nx-ml-6">{children}</ol>,
+  li: ({ children }) => <li className="nx-my-2">{children}</li>,
+  blockquote: ({ children }) => <blockquote className="nx-mt-6 nx-border-gray-300 nx-italic nx-text-gray-700 dark:nx-border-gray-700 dark:nx-text-gray-400 first:nx-mt-0 ltr:nx-border-l-2 ltr:nx-pl-6">{children}</blockquote>,
+  strong: ({ children }) => <strong className="nx-font-semibold">{children}</strong>,
+  hr: () => <hr className="nx-my-8 nx-border-neutral-200/70 dark:nx-border-primary-100/10" />,
+  pre: ({ children }) => <pre className="nx-bg-primary-700/5 nx-mb-4 nx-overflow-x-auto nx-rounded-xl nx-subpixel-antialiased dark:nx-bg-primary-300/10 nx-text-[.9em] nx-py-4 nx-px-4">{children}</pre>,
+  code: ({ className, children }) => {
+    if (className?.startsWith('language-'))
+      return <code className={className}>{children}</code>
+    return <code className="nx-border-black nx-border-opacity-[0.04] nx-bg-opacity-[0.03] nx-bg-black nx-break-words nx-rounded-md nx-border nx-py-0.5 nx-px-[.25em] nx-text-[.9em] dark:nx-border-white/10 dark:nx-bg-white/10">{children}</code>
+  },
+  table: ({ children }) => <table className="nx-block nx-overflow-x-scroll nx-mt-6 first:nx-mt-0">{children}</table>,
+  tr:   ({ children }) => <tr className="nx-m-0 nx-border-t nx-border-gray-300 nx-p-0 dark:nx-border-gray-600 even:nx-bg-gray-100 even:dark:nx-bg-gray-600/20">{children}</tr>,
+  th:   ({ children }) => <th className="nx-m-0 nx-border nx-border-gray-300 nx-px-4 nx-py-2 nx-font-semibold dark:nx-border-gray-600">{children}</th>,
+  td:   ({ children }) => <td className="nx-m-0 nx-border nx-border-gray-300 nx-px-4 nx-py-2 dark:nx-border-gray-600">{children}</td>,
+}
 
 
 function SectionMeta({ page }) {
@@ -33,8 +59,9 @@ export default function PageContinuation() {
     fetch(`${base}/feed-index.json`).then(r => r.json()).then(set_feed).catch(() => set_feed([]))
   }, [])
 
-  const current_url = router.asPath.split('?')[0].replace(/\/$/, '') || '/'
-  const current_idx = feed ? feed.findIndex(p => p.url.replace(/\/$/, '') === current_url) : -1
+  const norm = url => url.replace(/\/$/, '') || '/'
+  const current_url = norm(router.asPath.split('?')[0])
+  const current_idx = feed ? feed.findIndex(p => norm(p.url) === current_url) : -1
   const has_more = feed != null && current_idx >= 0 && current_idx + count + 1 < feed.length
 
   useEffect(() => {
@@ -60,7 +87,7 @@ export default function PageContinuation() {
             <Link href={page.url}>{page.title}</Link>
           </h1>
           <SectionMeta page={page} />
-          <ReactMarkdown>{page.content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={md_components}>{page.content}</ReactMarkdown>
         </section>
       ))}
       {has_more && <div ref={sentinel} className="feed-sentinel" />}

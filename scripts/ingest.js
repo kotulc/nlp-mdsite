@@ -245,11 +245,12 @@ function write_posts_index(dated_posts) {
 
 
 function extract_content(mdx) {
-  /** Strip frontmatter, import lines, and bare JSX component tags from MDX. */
+  /** Strip frontmatter, imports, bare JSX tags, and leading H1 from MDX. */
   return mdx
     .replace(/^---[\s\S]*?---\n/, '')
     .replace(/^import\s+.+$/gm, '')
     .replace(/^<[A-Z][^\n>]*\/>\s*$/gm, '')
+    .replace(/^#\s+.+\n?/, '')
     .trim()
 }
 
@@ -259,7 +260,6 @@ function collect_feed_pages(dir, prefix) {
    *  prefix: URL path prefix for this directory level ('' for root). */
   const pages = []
   for (const [slug, title] of read_meta(path.join(dir, '_meta.json'))) {
-    if (prefix === '' && slug === 'index') continue  // skip root home page
     const sub_dir = path.join(dir, slug)
     if (fs.existsSync(sub_dir) && fs.statSync(sub_dir).isDirectory()) {
       pages.push(...collect_feed_pages(sub_dir, `${prefix}/${slug}`))
@@ -268,8 +268,9 @@ function collect_feed_pages(dir, prefix) {
       if (!fs.existsSync(mdx_path)) continue
       const mdx = fs.readFileSync(mdx_path, 'utf8')
       const fm  = parse_fm(mdx)
+      const is_root_idx = prefix === '' && slug === 'index'
       pages.push({
-        url:          slug === 'index' ? `${prefix}/` : `${prefix}/${slug}`,
+        url:          is_root_idx ? '/' : slug === 'index' ? `${prefix}/` : `${prefix}/${slug}`,
         title:        fm.title || title,
         date:         fm.date  || '',
         categories:   Array.isArray(fm.categories) ? fm.categories : [],
@@ -292,23 +293,23 @@ function write_feed_index() {
 
 
 function sync_readme() {
-  /** Sync README.md → pages/about.mdx and inject its entry into root _meta.json.
+  /** Sync README.md → pages/overview.mdx and inject its entry into root _meta.json.
    *  Strips the leading H1 (duplicates the frontmatter title) before writing. */
   const readme_path = path.join(ROOT, 'README.md')
   if (!fs.existsSync(readme_path)) return
 
   let body = fs.readFileSync(readme_path, 'utf8').replace(/^#[^\n]*\n/, '')
-  const mdx = `---\ntitle: About\ncategories:\n  - site\ntags:\n  - readme\n---\n\n${body}`
-  const out = path.join(PAGES, 'about.mdx')
+  const mdx = `---\ntitle: Overview\ncategories:\n  - site\ntags:\n  - readme\n---\n\n${body}`
+  const out = path.join(PAGES, 'overview.mdx')
   fs.writeFileSync(out, mdx)
   add_reading_time(out)
 
-  // Inject 'About' into root _meta.json after 'index' if not already present
+  // Inject 'Overview' into root _meta.json after 'index' if not already present
   const meta_path = path.join(PAGES, '_meta.json')
   const entries = read_meta(meta_path)
-  if (!entries.find(([k]) => k === 'about')) {
+  if (!entries.find(([k]) => k === 'overview')) {
     const idx = entries.findIndex(([k]) => k === 'index')
-    entries.splice(idx >= 0 ? idx + 1 : 0, 0, ['about', 'About'])
+    entries.splice(idx >= 0 ? idx + 1 : 0, 0, ['overview', 'Overview'])
     write_meta(meta_path, entries)
   }
 }

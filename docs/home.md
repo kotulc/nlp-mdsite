@@ -1,5 +1,5 @@
 ---
-title: Home
+title: About
 categories:
   - site
 tags:
@@ -7,8 +7,8 @@ tags:
   - markdown
   - static-site
 related:
-  - title: About
-    url: /about
+  - title: Overview
+    url: /overview
   - title: Getting Started
     url: /getting-started
   - title: Features
