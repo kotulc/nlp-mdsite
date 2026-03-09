@@ -41,7 +41,7 @@ export default {
   ),
   toc: siteConfig.toc === false
     ? { component: () => null }
-    : { extraContent: siteConfig.meta_sidebar !== false ? <MetaSidebar /> : undefined },
+    : { extraContent: siteConfig.meta_sidebar !== false ? MetaSidebar : undefined },
   main: ({ children }) => (
     <>
       <PageMeta />
