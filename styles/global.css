@@ -161,7 +161,7 @@ img {
 }
 
 /* Show Nextra's right TOC column at lg (1024px) instead of xl (1280px) */
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
   .nextra-toc { display: block !important; }
 }
 

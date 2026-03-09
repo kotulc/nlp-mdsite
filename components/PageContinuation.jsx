@@ -5,6 +5,7 @@
  */
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 
 
@@ -28,7 +29,8 @@ export default function PageContinuation() {
   const sentinel = useRef(null)
 
   useEffect(() => {
-    fetch('/feed-index.json').then(r => r.json()).then(set_feed).catch(() => set_feed([]))
+    const base = router.basePath || ''
+    fetch(`${base}/feed-index.json`).then(r => r.json()).then(set_feed).catch(() => set_feed([]))
   }, [])
 
   const current_url = router.asPath.split('?')[0].replace(/\/$/, '') || '/'
@@ -55,7 +57,7 @@ export default function PageContinuation() {
         <section key={page.url} className="feed-section">
           <div className="feed-section-divider" />
           <h1 className="feed-section-title">
-            <a href={page.url}>{page.title}</a>
+            <Link href={page.url}>{page.title}</Link>
           </h1>
           <SectionMeta page={page} />
           <ReactMarkdown>{page.content}</ReactMarkdown>

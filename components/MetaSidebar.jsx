@@ -4,6 +4,7 @@
  * your page's frontmatter (e.g. readability: 72) to surface them here.
  */
 import { useConfig } from 'nextra-theme-docs'
+import Link from 'next/link'
 
 
 const RESERVED = new Set(['title', 'date', 'categories', 'tags', 'reading_time', 'related'])
@@ -52,7 +53,7 @@ export default function MetaSidebar() {
           <div className="meta-sidebar-label">Related</div>
           {related.map(({ title, url }) => (
             <div key={url} className="related-link">
-              <a href={url}>{title}</a>
+              <Link href={url}>{title}</Link>
             </div>
           ))}
         </div>
