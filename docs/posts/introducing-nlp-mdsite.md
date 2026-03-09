@@ -3,6 +3,7 @@ title: Welcome
 date: 2026-03-07
 categories:
   - announcement
+order: 1
 tags:
   - markdown
   - nextjs
@@ -16,7 +17,7 @@ related:
     url: /features
 ---
 
-# Introducing nlp-mdsite
+# Introducing mdsite
 
 This site is built with nlp-mdsite — a static site template for publishing markdown
 content with zero per-page configuration.

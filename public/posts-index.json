@@ -1,8 +1,25 @@
 [
   {
+    "slug": "plans",
+    "title": "Future Plans",
+    "date": "2026-03-08",
+    "order": null,
+    "categories": [
+      "roadmap"
+    ],
+    "tags": [
+      "planning",
+      "phase-2",
+      "intelligence"
+    ],
+    "reading_time": 2,
+    "url": "/posts/plans"
+  },
+  {
     "slug": "introducing-nlp-mdsite",
-    "title": "Introducing nlp-mdsite",
+    "title": "Welcome",
     "date": "2026-03-07",
+    "order": null,
     "categories": [
       "announcement"
     ],
@@ -12,6 +29,6 @@
       "static-site"
     ],
     "reading_time": 1,
-    "url": "/posts/2026/introducing-nlp-mdsite"
+    "url": "/posts/introducing-nlp-mdsite"
   }
 ]

@@ -3,6 +3,7 @@ title: Future Plans
 date: 2026-03-08
 categories:
   - roadmap
+order: 2
 tags:
   - planning
   - phase-2
