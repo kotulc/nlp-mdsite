@@ -15,7 +15,6 @@ related:
     url: /features
 ---
 
-
 # nlp-mdsite
 
 A Next.js static site template for intelligent, agent-friendly publishing from markdown.
@@ -36,7 +35,7 @@ The template is designed to be configured as easily by an AI agent as by a human
 config change is all that's required to launch a new site.
 
 
-## Getting Started
+## Get Started
 
 See [Getting Started](getting-started) to have a site running in minutes,
 or browse the [Features](features) section for the full capability overview.

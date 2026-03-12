@@ -1,15 +1,18 @@
 /* Mobile-first global styles for nlp-mdsite */
 
+/* Hide page H1 (used for feed page) */
+.page-title-hidden h1 { display: none; }
+
 /* Per-page continuation feed */
 .feed-section { margin-top: 2rem; }
 
 .feed-section-divider {
   border-top: 2px solid var(--nextra-colors-gray-200, #e5e7eb);
-  margin: 2rem 0;
+  margin: 5rem 0 4rem;
 }
 
 .feed-section-title {
-  font-size: 1.5rem;
+  font-size: 2.25rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
@@ -18,16 +21,22 @@
 
 .feed-section-title a:hover { text-decoration: underline; }
 
-.feed-section-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: var(--nextra-colors-gray-500, #6b7280);
-  margin-bottom: 1.25rem;
+
+/* Pagination link shown when group exceeds max_feed_pages */
+.feed-pagination {
+  margin-top: 5rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--nextra-colors-gray-200, #e5e7eb);
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
-.feed-sentinel { height: 1px; }
+.feed-pagination a {
+  color: var(--nextra-colors-primary-600, #2563eb);
+  text-decoration: none;
+}
+
+.feed-pagination a:hover { text-decoration: underline; }
 
 
 /* GitHub header icon */

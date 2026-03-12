@@ -13,7 +13,7 @@
       "intelligence"
     ],
     "reading_time": 2,
-    "url": "/posts/plans"
+    "url": "/updates/plans"
   },
   {
     "slug": "introducing-nlp-mdsite",
@@ -29,6 +29,6 @@
       "static-site"
     ],
     "reading_time": 1,
-    "url": "/posts/introducing-nlp-mdsite"
+    "url": "/updates/introducing-nlp-mdsite"
   }
 ]

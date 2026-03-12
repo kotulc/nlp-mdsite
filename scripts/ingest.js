@@ -247,71 +247,81 @@ function write_posts_index(dated_posts) {
 function extract_content(mdx) {
   /** Strip frontmatter, imports, bare JSX tags, and leading H1 from MDX. */
   return mdx
-    .replace(/^---[\s\S]*?---\n/, '')
+    .replace(/^---[\s\S]*?---\r?\n/, '')
     .replace(/^import\s+.+$/gm, '')
     .replace(/^<[A-Z][^\n>]*\/>\s*$/gm, '')
-    .replace(/^#\s+.+\n?/, '')
+    .trimStart()                            // remove blank lines before H1
+    .replace(/^#\s+.+\r?\n?/, '')
     .trim()
 }
 
 
-function collect_feed_pages(dir, prefix) {
-  /** Walk pages/ via _meta.json files, returning all pages in nav order with content.
-   *  prefix: URL path prefix for this directory level ('' for root). */
-  const pages = []
-  for (const [slug, title] of read_meta(path.join(dir, '_meta.json'))) {
-    const sub_dir = path.join(dir, slug)
-    if (fs.existsSync(sub_dir) && fs.statSync(sub_dir).isDirectory()) {
-      pages.push(...collect_feed_pages(sub_dir, `${prefix}/${slug}`))
-    } else {
-      const mdx_path = path.join(dir, `${slug}.mdx`)
-      if (!fs.existsSync(mdx_path)) continue
-      const mdx = fs.readFileSync(mdx_path, 'utf8')
-      const fm  = parse_fm(mdx)
-      const is_root_idx = prefix === '' && slug === 'index'
-      pages.push({
-        url:          is_root_idx ? '/' : slug === 'index' ? `${prefix}/` : `${prefix}/${slug}`,
-        title:        fm.title || title,
-        date:         fm.date  || '',
-        categories:   Array.isArray(fm.categories) ? fm.categories : [],
-        tags:         Array.isArray(fm.tags)        ? fm.tags       : [],
-        reading_time: fm.reading_time ? Number(fm.reading_time) : null,
-        content:      extract_content(mdx),
-      })
-    }
+function fmt_meta_jsx(fm) {
+  /** Build inline JSX for PageHeader + TagList matching individual page appearance. */
+  const parts = []
+  const date = fm.date || ''
+  const rt   = fm.reading_time ? Number(fm.reading_time) : null
+  const cats = Array.isArray(fm.categories) ? fm.categories : []
+  const tags = Array.isArray(fm.tags)        ? fm.tags       : []
+  if (date || rt) {
+    const d = date ? ` date="${date}"` : ''
+    const r = rt   ? ` reading_time={${rt}}` : ''
+    parts.push(`<PageHeader${d}${r} />`)
   }
-  return pages
+  if (cats.length || tags.length)
+    parts.push(`<TagList categories={${JSON.stringify(cats)}} tags={${JSON.stringify(tags)}} />`)
+  return parts.join('\n')
 }
 
 
-function write_feed_index() {
-  /** Write public/feed-index.json — all pages in nav order with content for the feed. */
-  const pages = collect_feed_pages(PAGES, '')
-  fs.mkdirSync(PUB_DIR, { recursive: true })
-  fs.writeFileSync(path.join(PUB_DIR, 'feed-index.json'), JSON.stringify(pages, null, 2) + '\n')
+function write_feed_page() {
+  /** Generate pages/feed.mdx combining all root-level pages in sidebar order.
+   *  Each page becomes an H1 section with inline PageHeader + TagList JSX,
+   *  matching the appearance of individual pages. Frontmatter and the leading H1
+   *  are stripped. Prepends 'feed' + separator to root _meta.json. */
+  const sections = []
+
+  for (const [slug, title] of read_meta(path.join(PAGES, '_meta.json'))) {
+    // Resolve to a page file: direct leaf or directory index
+    const leaf    = path.join(PAGES, `${slug}.mdx`)
+    const dir_idx = path.join(PAGES, slug, 'index.mdx')
+    const mdx_path = fs.existsSync(leaf) ? leaf : fs.existsSync(dir_idx) ? dir_idx : null
+    if (!mdx_path) continue
+
+    const mdx     = fs.readFileSync(mdx_path, 'utf8')
+    const content = extract_content(mdx)
+    if (!content) continue
+
+    const fm          = parse_fm(mdx)
+    const section_title = fm.title || title
+    const meta_jsx    = fmt_meta_jsx(fm)
+    const meta_block  = meta_jsx ? `${meta_jsx}\n\n` : ''
+    sections.push(`# ${section_title}\n\n${meta_block}${content}`)
+  }
+
+  // MDX imports must appear before any JSX usage
+  const imports = [
+    `import PageHeader from '../components/PageHeader'`,
+    `import TagList from '../components/TagList'`,
+  ].join('\n')
+
+  fs.writeFileSync(
+    path.join(PAGES, 'feed.mdx'),
+    `---\ntitle: Feed\nhide_page_title: true\n---\n\n${imports}\n\n${sections.join('\n\n<div className="feed-section-divider" />\n\n')}\n`
+  )
+
+  // Prepend 'feed' to root _meta.json (ingest_dir rebuilds it each run)
+  const meta_path = path.join(PAGES, '_meta.json')
+  const entries   = read_meta(meta_path)
+  write_meta(meta_path, [...entries, ['feed', { display: 'hidden', title: 'Feed' }]])
 }
 
 
 function sync_readme() {
-  /** Sync README.md → pages/overview.mdx and inject its entry into root _meta.json.
-   *  Strips the leading H1 (duplicates the frontmatter title) before writing. */
+  /** Copy README.md → docs/about.md so ingest_dir() processes it normally. */
   const readme_path = path.join(ROOT, 'README.md')
   if (!fs.existsSync(readme_path)) return
-
-  let body = fs.readFileSync(readme_path, 'utf8').replace(/^#[^\n]*\n/, '')
-  const mdx = `---\ntitle: Overview\ncategories:\n  - site\ntags:\n  - readme\n---\n\n${body}`
-  const out = path.join(PAGES, 'overview.mdx')
-  fs.writeFileSync(out, mdx)
-  add_reading_time(out)
-
-  // Inject 'Overview' into root _meta.json after 'index' if not already present
-  const meta_path = path.join(PAGES, '_meta.json')
-  const entries = read_meta(meta_path)
-  if (!entries.find(([k]) => k === 'overview')) {
-    const idx = entries.findIndex(([k]) => k === 'index')
-    entries.splice(idx >= 0 ? idx + 1 : 0, 0, ['overview', 'Overview'])
-    write_meta(meta_path, entries)
-  }
+  fs.copyFileSync(readme_path, path.join(SRC, 'about.md'))
 }
 
 
@@ -321,6 +331,8 @@ console.log(`\nIngesting from: ${SRC}`)
 
 fs.rmSync(PAGES,   { recursive: true, force: true })
 fs.rmSync(PUB_IMG, { recursive: true, force: true })
+
+if (siteConfig.ingest_readme) sync_readme()
 
 const dated_posts = []
 ingest_dir(SRC, PAGES, '', dated_posts)
@@ -332,8 +344,6 @@ if (!fs.existsSync(path.join(PAGES, 'index.mdx'))) {
 const app_src = path.join(ROOT, '_app.jsx')
 if (fs.existsSync(app_src)) fs.copyFileSync(app_src, path.join(PAGES, '_app.jsx'))
 
-if (!process.argv[2]) sync_readme()
-
 console.log(`  Mirrored source tree into pages/`)
 
 if (dated_posts.length) {
@@ -343,8 +353,8 @@ if (dated_posts.length) {
 }
 
 if (siteConfig.feed) {
-  write_feed_index()
-  console.log('  Written public/feed-index.json')
+  write_feed_page()
+  console.log('  Written pages/feed.mdx')
 }
 
 console.log('Done.\n')
