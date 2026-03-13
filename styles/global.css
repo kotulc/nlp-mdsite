@@ -1,7 +1,8 @@
 /* Mobile-first global styles for nlp-mdsite */
 
-/* Hide page H1 (used for feed page) */
-.page-title-hidden h1 { display: none; }
+/* Hide Nextra's injected page title H1 when hide_page_title frontmatter is set.
+ * Targets the H1 that appears as a prior sibling of the main content wrapper. */
+h1:has(~ .page-title-hidden) { display: none; }
 
 /* Per-page continuation feed */
 .feed-section { margin-top: 2rem; }
