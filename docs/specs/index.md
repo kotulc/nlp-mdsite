@@ -11,7 +11,7 @@ and named test cases for a feature area.
 
 ## Development Process
 
-1. Write a spec here in `docs/spec/<feature>.md`
+1. Write a spec here in `docs/specs/<feature>.md`
 2. Implement the test cases in `tests/` (tests first — they should fail initially)
 3. Implement the feature until all tests pass
 4. The spec page appears in the site automatically after running `npm run ingest`
@@ -42,7 +42,6 @@ One-paragraph description of purpose.
 ## Current Specs
 
 - [Ingest Pipeline](ingest-pipeline) — content transformation and output generation
-- [Page Feed](feed) — inline continuation rendering below current page
 - [Page Metadata](page-metadata) — date, reading time, category and tag chips
 - [Metadata Sidebar](meta-sidebar) — per-page metrics, tags, and related links in the TOC column
 - [Post Index](post-index) — reverse-chronological dated post listing

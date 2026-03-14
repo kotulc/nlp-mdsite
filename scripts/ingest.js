@@ -116,16 +116,6 @@ function write_meta(dest_path, entries) {
 }
 
 
-function read_meta(meta_path) {
-  /** Read a _meta.json written by write_meta into ordered [key, value] pairs. */
-  if (!fs.existsSync(meta_path)) return []
-  return fs.readFileSync(meta_path, 'utf8').split('\n').flatMap(l => {
-    const m = l.match(/^\s+"([^"]+)":\s+"([^"]+)",?$/)
-    return m ? [[m[1], m[2]]] : []
-  })
-}
-
-
 function sort_entries(entries, rel) {
   /** Sort: nav_order config > frontmatter order > date/year/alpha. */
   const idx  = entries.filter(e => e.slug === 'index')
@@ -293,41 +283,6 @@ function extract_content(mdx) {
 }
 
 
-function write_feed_index() {
-  /** Write public/feed-index.json — all pages in sidebar order with extracted content.
-   *  Used by PageContinuation for client-side feed rendering. */
-  const entries = []
-
-  function collect(meta_path, rel) {
-    for (const [slug, title] of read_meta(meta_path)) {
-      const rel_slug  = rel ? `${rel}/${slug}` : slug
-      const page_path = path.join(PAGES, `${rel_slug}.mdx`)
-      const sub_meta  = path.join(PAGES, rel_slug, '_meta.json')
-      const url       = slug === 'index' ? (rel ? `/${rel}` : '/') : `/${rel_slug}`
-
-      if (fs.existsSync(page_path)) {
-        const mdx = fs.readFileSync(page_path, 'utf8')
-        const fm  = parse_fm(mdx)
-        entries.push({
-          url,
-          title:        fm.title    || title,
-          date:         fm.date     || '',
-          categories:   Array.isArray(fm.categories) ? fm.categories : [],
-          tags:         Array.isArray(fm.tags)        ? fm.tags       : [],
-          reading_time: fm.reading_time ? Number(fm.reading_time) : null,
-          content:      fm.auto_redirect ? null : extract_content(mdx),
-        })
-      }
-
-      if (fs.existsSync(sub_meta)) collect(sub_meta, rel_slug)
-    }
-  }
-
-  collect(path.join(PAGES, '_meta.json'), '')
-  fs.writeFileSync(path.join(PUB_DIR, 'feed-index.json'), JSON.stringify(entries, null, 2) + '\n')
-}
-
-
 function sync_readme() {
   /** Copy README.md → docs/about.md so ingest_dir() processes it normally. */
   const readme_path = path.join(ROOT, 'README.md')
@@ -363,11 +318,6 @@ if (require.main === module) {
     write_posts_index(dated_posts)
     console.log(`  Found ${dated_posts.length} dated pages`)
     console.log(`  Written public/posts-index.json`)
-  }
-
-  if (siteConfig.feed) {
-    write_feed_index()
-    console.log('  Written public/feed-index.json')
   }
 
   console.log('Done.\n')

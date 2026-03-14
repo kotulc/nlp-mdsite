@@ -1,11 +1,7 @@
 /**
- * RSS icon link in the navbar. Links to the root page which renders the
- * full site content via the PageContinuation inline feed.
- * Hidden when siteConfig.feed is false.
+ * RSS icon button in the navbar. Placeholder for a future continuous-scroll
+ * toggle feature — currently renders as a no-op button.
  */
-import { useRouter } from 'next/router'
-import siteConfig from '../site.config'
-
 
 const RSS_ICON = (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -16,11 +12,9 @@ const RSS_ICON = (
 
 
 export default function FeedLink() {
-  const { basePath } = useRouter()
-  if (!siteConfig.feed) return null
   return (
-    <a href={`${basePath}/`} className="github-link" aria-label="Feed">
+    <button className="github-link" aria-label="Feed" onClick={() => {}}>
       {RSS_ICON}
-    </a>
+    </button>
   )
 }

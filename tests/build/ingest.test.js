@@ -188,40 +188,6 @@ describe('extract_content', () => {
 })
 
 
-// --- feed-index output (integration) ---
-
-const FEED_INDEX = path.join(__dirname, '../../public/feed-index.json')
-
-describe('feed-index output', () => {
-  let feed
-
-  beforeAll(() => { feed = JSON.parse(fs.readFileSync(FEED_INDEX, 'utf8')) })
-
-  test('test_feed_index_includes_content', () => {
-    /** Every non-auto-redirect entry has a non-empty content string. */
-    const content_entries = feed.filter(e => e.content !== null)
-    expect(content_entries.length).toBeGreaterThan(0)
-    content_entries.forEach(e => expect(typeof e.content).toBe('string'))
-  })
-
-  test('test_feed_index_has_required_fields', () => {
-    /** Every entry has url, title, date, categories, tags, reading_time, content. */
-    const required = ['url', 'title', 'date', 'categories', 'tags', 'reading_time', 'content']
-    feed.forEach(e => required.forEach(f => expect(e).toHaveProperty(f)))
-  })
-
-  test('test_feed_index_urls_no_basepath', () => {
-    /** URLs start with / and do not include the base_path prefix. */
-    const siteConfig = require('../../site.config')
-    const base = siteConfig.base_path || ''
-    feed.forEach(e => {
-      expect(e.url).toMatch(/^\//)
-      if (base) expect(e.url).not.toMatch(new RegExp('^' + base))
-    })
-  })
-})
-
-
 // --- pages output (integration) ---
 
 const PAGES = path.join(__dirname, '../../pages')
