@@ -15,7 +15,7 @@ module.exports = {
   // Value = ordered slug array; folders and pages can be mixed; unlisted slugs append alphabetically
   // Per-page: add `order: N` to a page's frontmatter for ordering without touching this file
   nav_order: {
-    '': ['getting-started', 'configuration', 'features', 'components', 'posts'],
+    '': ['getting-started', 'configuration', 'features', 'components', 'spec', 'posts'],
     'features': ['content-pipeline', 'metadata', 'styling', 'deployment'],
   },
 

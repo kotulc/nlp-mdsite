@@ -8,6 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "preview": "npx serve out",
+    "watch": "node scripts/watch.js",
     "test": "jest"
   },
   "dependencies": {

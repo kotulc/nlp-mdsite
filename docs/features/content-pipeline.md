@@ -30,6 +30,8 @@ Or use the setup command, which also validates your environment:
 
 1. **Converts `.md` → `.mdx`** — any file named `home.md` or `index.md` becomes
    `index.mdx` (the section's landing page). All other files keep their slug.
+   If no index file exists at a level, the first sorted page is used automatically
+   (a transparent redirect is generated so the directory URL resolves correctly).
 
 2. **Copies images** — an `images/` folder next to any `.md` files is copied to
    `public/images/<relative-path>/`.
@@ -44,8 +46,12 @@ Or use the setup command, which also validates your environment:
    the page's frontmatter as `reading_time`.
 
 6. **Generates `_meta.json`** — navigation ordering at every directory level.
-   Pages with dates are sorted newest-first. Directories of 4-digit year slugs
-   (e.g. `2020/`, `2023/`) are sorted descending. All others are alphabetical.
+   Sort order precedence (highest first):
+   - `nav_order` key in `site.config.js` for that directory path
+   - Frontmatter `order: N` on individual pages (lower numbers first)
+   - Date field present → newest-first
+   - Directory of 4-digit year slugs (e.g. `2020/`, `2023/`) → descending
+   - Default → alphabetical by slug
 
 7. **Writes `posts-index.json`** — all dated pages that are not at the source root
    are collected into `public/posts-index.json`, sorted newest-first. This powers
@@ -53,8 +59,8 @@ Or use the setup command, which also validates your environment:
 
 ## Source layout rules
 
-- Any folder structure is valid — depth is unlimited
+- Any folder structure is valid — depth is unlimited; no index page is required
 - `home.md` or `index.md` at any level → that section's landing page
-- Root-level `home.md` → the site home page at `/`
+- No index file → first sorted page at that level becomes the landing page
 - `images/` next to `.md` files → copied and path-rewritten automatically
 - Root-level pages with `date` fields are treated as site pages, not blog posts

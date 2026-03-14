@@ -7,8 +7,6 @@ tags:
   - markdown
   - static-site
 related:
-  - title: Overview
-    url: /overview
   - title: Getting Started
     url: /getting-started
   - title: Features

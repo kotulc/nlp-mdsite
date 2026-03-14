@@ -38,13 +38,13 @@ metadata, and producing a post index.
 
 ## Source structure
 
-This post lives at `docs/posts/2026/introducing-nlp-mdsite.md` in the repository.
-The pipeline mirrors it to `pages/posts/2026/introducing-nlp-mdsite.mdx` and adds it
-to `posts-index.json`, so it appears in the [Posts](/posts) index automatically.
+This post lives at `docs/updates/introducing-nlp-mdsite.md` in the repository.
+The pipeline mirrors it to `pages/updates/introducing-nlp-mdsite.mdx` and adds it
+to `posts-index.json`, so it appears in the [Updates](/updates) index automatically.
 
 The image above (`images/example.svg`) is stored next to this file at
-`docs/posts/2026/images/example.svg`. The pipeline copies it to
-`public/images/posts/2026/example.svg` and rewrites the reference to an absolute path.
+`docs/updates/images/example.svg`. The pipeline copies it to
+`public/images/updates/example.svg` and rewrites the reference to an absolute path.
 
 ## Next steps
 
