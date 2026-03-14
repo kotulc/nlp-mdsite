@@ -9,6 +9,9 @@ module.exports = {
   toc: true,               // right sidebar: "On This Page" section navigation
   meta_sidebar: true,      // right sidebar: tags, metrics, and related links below the TOC
 
+  // Directories to render as inline feeds; '/' = site root
+  flatten: ['updates'],
+
   // Nav ordering: key = directory path from source root ('' = root level)
   // Value: slug array to pin specific pages first; unlisted pages auto-sort
   // Auto-sort: newest-first when any page has a date field, alphabetical otherwise

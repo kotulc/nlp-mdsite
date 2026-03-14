@@ -8,9 +8,9 @@
  *   - Strips corrupt EXIF segments from copied JPEGs
  *   - Injects reading_time into each page's frontmatter
  *   - Auto-generates _meta.json at each level; sort order:
- *       nav_order config > frontmatter `order:` > date (newest-first) > alpha
- *   - Writes public/posts-index.json for all pages with a date field
- *   - Writes public/feed-index.json for all pages in sidebar order with content
+ *       nav_order config > date (newest-first) > alpha
+ *   - For flatten[] directories: writes public/dir-feeds/<name>.json and generates
+ *     a DirFeed index.mdx; individual pages remain deep-linkable but hidden in sidebar
  *
  * Usage: node scripts/ingest.js [source-dir]
  *        Default source-dir: docs/
@@ -116,6 +116,21 @@ function write_meta(dest_path, entries) {
 }
 
 
+function is_flatten(rel) {
+  /** True if rel matches a directory in siteConfig.flatten ('/' normalizes to ''). */
+  return (siteConfig.flatten || []).map(d => d === '/' ? '' : d).includes(rel)
+}
+
+
+function write_dir_feed(entries, rel) {
+  /** Write public/dir-feeds/<name>.json for a flattened directory. */
+  const name = rel.replace(/\//g, '-') || 'root'
+  const dir  = path.join(PUB_DIR, 'dir-feeds')
+  fs.mkdirSync(dir, { recursive: true })
+  fs.writeFileSync(path.join(dir, `${name}.json`), JSON.stringify(entries, null, 2) + '\n')
+}
+
+
 function auto_sort(entries) {
   /** Sort entries: newest-first by date when any entry has a date, else alphabetical.
    *  Undated entries always sort alphabetically after dated entries. */
@@ -172,10 +187,9 @@ function auto_index(dest_dir, sorted, rel) {
 }
 
 
-function ingest_dir(src_dir, dest_dir, rel, dated_posts) {
+function ingest_dir(src_dir, dest_dir, rel) {
   /** Recursively mirror src_dir → dest_dir.
    *  rel: path from SRC to src_dir using forward slashes ('' for root).
-   *  dated_posts: accumulates all pages with a date field.
    *  Returns { title } from the directory's index page (or the directory name). */
   fs.mkdirSync(dest_dir, { recursive: true })
 
@@ -204,7 +218,7 @@ function ingest_dir(src_dir, dest_dir, rel, dated_posts) {
 
     if (stat.isDirectory()) {
       const sub_rel = rel ? `${rel}/${entry}` : entry
-      const { title } = ingest_dir(src_entry, path.join(dest_dir, entry), sub_rel, dated_posts)
+      const { title } = ingest_dir(src_entry, path.join(dest_dir, entry), sub_rel)
       entries.push({ slug: entry, title, date: '' })
       continue
     }
@@ -238,30 +252,58 @@ function ingest_dir(src_dir, dest_dir, rel, dated_posts) {
       url:          url || '/',
     }
     entries.push(record)
-    if (fm.date && rel) dated_posts.push(record)  // root-level pages are site pages, not posts
     if (slug === 'index') dir_title = record.title
   }
 
-  const sorted = sort_entries(entries, rel)
-  if (!fs.existsSync(path.join(dest_dir, 'index.mdx'))) auto_index(dest_dir, sorted, rel)
+  const sorted  = sort_entries(entries, rel)
+  const is_flat = is_flatten(rel)
 
-  // If index.mdx exists but wasn't in sorted (auto-generated redirect), hide it from sidebar
-  const has_index  = sorted.some(e => e.slug === 'index')
-  const meta_pairs = sorted.map(e => [e.slug, e.title])
-  if (!has_index && fs.existsSync(path.join(dest_dir, 'index.mdx'))) {
-    meta_pairs.unshift(['index', { display: 'hidden', title: '' }])
+  if (is_flat) {
+    // Re-read content for flat entries (content not stored in record by default)
+    const feed_entries = sorted
+      .filter(e => e.slug !== 'index' && fs.existsSync(path.join(dest_dir, `${e.slug}.mdx`)))
+      .map(e => ({ ...e, content: extract_content(fs.readFileSync(path.join(dest_dir, `${e.slug}.mdx`), 'utf8')) }))
+    write_dir_feed(feed_entries, rel)
+
+    // depth from pages/ to the DirFeed page file
+    const depth    = rel ? rel.split('/').length : 1
+    const rel_path = '../'.repeat(depth) + 'components/DirFeed'
+
+    if (rel) {
+      // Non-root: write DirFeed as sibling .mdx file so Nextra treats it as a flat page (not a folder)
+      const page_path = path.join(dest_dir, '..', path.basename(dest_dir) + '.mdx')
+      fs.writeFileSync(page_path, [
+        `---`, `title: ${dir_title}`, `---`, ``,
+        `import DirFeed from '${rel_path}'`, ``,
+        `<DirFeed dir="${rel}" />`,
+      ].join('\n') + '\n')
+    } else {
+      // Root: write index.mdx directly (no parent directory above pages/)
+      fs.writeFileSync(path.join(dest_dir, 'index.mdx'), [
+        `---`, `title: ${dir_title}`, `---`, ``,
+        `import DirFeed from '${rel_path}'`, ``,
+        `<DirFeed dir="" />`,
+      ].join('\n') + '\n')
+    }
+
+    // No index entry in meta — individual pages hidden, index.mdx not generated inside directory
+    const meta_pairs = sorted.filter(e => e.slug !== 'index').map(e => [e.slug, { display: 'hidden', title: '' }])
+    write_meta(path.join(dest_dir, '_meta.json'), meta_pairs)
+  } else {
+    if (!fs.existsSync(path.join(dest_dir, 'index.mdx'))) auto_index(dest_dir, sorted, rel)
+
+    // If index.mdx exists but wasn't in sorted (auto-generated redirect), hide it from sidebar
+    const has_index  = sorted.some(e => e.slug === 'index')
+    const meta_pairs = sorted.map(e => [e.slug, e.title])
+    if (!has_index && fs.existsSync(path.join(dest_dir, 'index.mdx'))) {
+      meta_pairs.unshift(['index', { display: 'hidden', title: '' }])
+    }
+    write_meta(path.join(dest_dir, '_meta.json'), meta_pairs)
   }
-  write_meta(path.join(dest_dir, '_meta.json'), meta_pairs)
+
   return { title: dir_title }
 }
 
-
-function write_posts_index(dated_posts) {
-  /** Write public/posts-index.json — all dated pages sorted newest-first. */
-  const sorted = [...dated_posts].sort((a, b) => b.date.localeCompare(a.date))
-  fs.mkdirSync(PUB_DIR, { recursive: true })
-  fs.writeFileSync(path.join(PUB_DIR, 'posts-index.json'), JSON.stringify(sorted, null, 2) + '\n')
-}
 
 
 function extract_content(mdx) {
@@ -303,19 +345,11 @@ if (require.main === module) {
 
   if (siteConfig.ingest_readme) sync_readme()
 
-  const dated_posts = []
-  ingest_dir(SRC, PAGES, '', dated_posts)
+  ingest_dir(SRC, PAGES, '')
 
   const app_src = path.join(ROOT, '_app.jsx')
   if (fs.existsSync(app_src)) fs.copyFileSync(app_src, path.join(PAGES, '_app.jsx'))
 
   console.log(`  Mirrored source tree into pages/`)
-
-  if (dated_posts.length) {
-    write_posts_index(dated_posts)
-    console.log(`  Found ${dated_posts.length} pages with dates`)
-    console.log(`  Written to public/posts-index.json`)
-  }
-
   console.log('Done.\n')
 }

@@ -51,9 +51,11 @@ Or use the setup command, which also validates your environment:
    - `nav_order` array in `site.config.js` pins listed pages first in declared order
    - Remaining pages: newest-first if any have a `date` field, alphabetical otherwise
 
-7. **Writes `posts-index.json`** — all dated pages that are not at the source root
-   are collected into `public/posts-index.json`, sorted newest-first. This powers
-   the PostIndex component on the auto-generated `/posts` page.
+7. **Flattens directories** — directories listed in `site.config.js` `flatten` field
+   are rendered as a single scrolling inline feed instead of individual navigable pages.
+   A `public/dir-feeds/<name>.json` file is written with each page's full content,
+   and the directory's `index.mdx` uses the `DirFeed` component to render them inline.
+   Individual page URLs remain deep-linkable; non-index entries are hidden from the sidebar.
 
 ## Source layout rules
 

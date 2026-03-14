@@ -10,12 +10,23 @@ import siteConfig from './site.config'
 
 
 function PageMeta() {
-  /** Renders date, reading time, and tag chips below the page title. */
+  /** Renders date, reading time, and tag chips. */
   const { frontMatter } = useConfig()
   return (
     <>
       <PageHeader date={frontMatter.date} reading_time={frontMatter.reading_time} />
       <TagList categories={frontMatter.categories} tags={frontMatter.tags} />
+    </>
+  )
+}
+
+
+function PageTitle({ children }) {
+  /** Custom h1 override: renders the heading then immediately injects page metadata. */
+  return (
+    <>
+      <h1 className="nx-mt-2 nx-text-4xl nx-font-bold nx-tracking-tight nx-text-slate-900 dark:nx-text-slate-100">{children}</h1>
+      <PageMeta />
     </>
   )
 }
@@ -43,13 +54,6 @@ export default {
   toc: siteConfig.toc === false
     ? { component: () => null }
     : { extraContent: siteConfig.meta_sidebar !== false ? MetaSidebar : undefined },
-  main: ({ children }) => {
-    const { frontMatter } = useConfig()
-    return (
-      <div className={frontMatter.hide_page_title ? 'page-title-hidden' : undefined}>
-        <PageMeta />
-        {children}
-      </div>
-    )
-  },
+  components: { h1: PageTitle },
+  main: ({ children }) => <>{children}</>,
 }

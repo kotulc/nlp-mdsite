@@ -212,11 +212,14 @@ describe('pages output ordering', () => {
     expect(meta['index']).toMatchObject({ display: 'hidden' })
   })
 
-  test('test_pages_auto_redirect_index_hidden_in_updates_meta', () => {
-    /** updates/ has no index.md — auto-redirect index must be hidden in _meta.json. */
-    const meta = JSON.parse(fs.readFileSync(path.join(PAGES, 'updates', '_meta.json'), 'utf8'))
-    expect(meta['index']).toBeDefined()
-    expect(meta['index']).toMatchObject({ display: 'hidden' })
+  test('test_pages_flatten_generates_page_file', () => {
+    /** updates/ is flattened — DirFeed written as pages/updates.mdx (flat page, not folder). */
+    expect(fs.existsSync(path.join(PAGES, 'updates.mdx'))).toBe(true)
+  })
+
+  test('test_pages_flatten_no_index_inside_subdir', () => {
+    /** Flatten writes sibling page file — no index.mdx generated inside the directory. */
+    expect(fs.existsSync(path.join(PAGES, 'updates', 'index.mdx'))).toBe(false)
   })
 
   test('test_pages_auto_redirect_index_hidden_in_features_meta', () => {
@@ -227,11 +230,11 @@ describe('pages output ordering', () => {
   })
 
   test('test_pages_updates_meta_follows_nav_order', () => {
-    /** updates/ has nav_order ['welcome'], so welcome is first; rest append alphabetically. */
+    /** updates/ is flattened — entries sorted per nav_order, all hidden, no index entry. */
     const meta = JSON.parse(fs.readFileSync(path.join(PAGES, 'updates', '_meta.json'), 'utf8'))
-    const keys = Object.keys(meta).filter(k => k !== 'index')
+    const keys = Object.keys(meta)
+    expect(keys).not.toContain('index')
     expect(keys[0]).toBe('welcome')
-    expect(keys.slice(1)).toEqual([...keys.slice(1)].sort())
   })
 
   test('test_pages_features_meta_follows_nav_order', () => {
@@ -241,5 +244,47 @@ describe('pages output ordering', () => {
     const meta       = JSON.parse(fs.readFileSync(path.join(PAGES, 'features', '_meta.json'), 'utf8'))
     const keys       = Object.keys(meta).filter(k => k !== 'index')
     expect(keys.slice(0, expected.length)).toEqual(expected)
+  })
+})
+
+
+// --- dir-feed output (integration) ---
+
+const PUB = path.join(__dirname, '../../public')
+describe('dir-feed output', () => {
+  test('test_dir_feed_file_exists', () => {
+    /** public/dir-feeds/updates.json is written for the updates/ flatten directory. */
+    expect(fs.existsSync(path.join(PUB, 'dir-feeds', 'updates.json'))).toBe(true)
+  })
+
+  test('test_dir_feed_has_required_fields', () => {
+    /** Each entry in updates.json has url, title, date, categories, tags, reading_time, content. */
+    const entries = JSON.parse(fs.readFileSync(path.join(PUB, 'dir-feeds', 'updates.json'), 'utf8'))
+    expect(entries.length).toBeGreaterThan(0)
+    for (const e of entries) {
+      expect(e).toHaveProperty('url')
+      expect(e).toHaveProperty('title')
+      expect(e).toHaveProperty('date')
+      expect(e).toHaveProperty('categories')
+      expect(e).toHaveProperty('tags')
+      expect(e).toHaveProperty('reading_time')
+      expect(e).toHaveProperty('content')
+    }
+  })
+
+  test('test_dir_feed_page_file_contains_dir_feed', () => {
+    /** pages/updates.mdx contains <DirFeed dir="updates" /> (not an auto-redirect). */
+    const content = fs.readFileSync(path.join(PAGES, 'updates.mdx'), 'utf8')
+    expect(content).toContain('<DirFeed dir="updates" />')
+  })
+
+  test('test_dir_feed_entries_hidden_in_meta', () => {
+    /** All entries in updates/ _meta.json have display: 'hidden' (no index entry). */
+    const meta = JSON.parse(fs.readFileSync(path.join(PAGES, 'updates', '_meta.json'), 'utf8'))
+    expect(Object.keys(meta).length).toBeGreaterThan(0)
+    expect(meta['index']).toBeUndefined()
+    for (const v of Object.values(meta)) {
+      expect(v).toMatchObject({ display: 'hidden' })
+    }
   })
 })

@@ -1,9 +1,5 @@
 /* Mobile-first global styles for nlp-mdsite */
 
-/* Hide Nextra's injected page title H1 when hide_page_title frontmatter is set.
- * Targets the H1 that appears as a prior sibling of the main content wrapper. */
-h1:has(~ .page-title-hidden) { display: none; }
-
 /* Per-page continuation feed */
 .feed-section { margin-top: 2rem; }
 
@@ -38,6 +34,89 @@ h1:has(~ .page-title-hidden) { display: none; }
 }
 
 .feed-pagination a:hover { text-decoration: underline; }
+
+
+/* DirFeed inline feed container */
+.dir-feed { display: flex; flex-direction: column; }
+
+.feed-loading { font-style: italic; color: var(--nextra-colors-gray-500, #6b7280); }
+
+
+/* Markdown body in DirFeed sections — mirrors Nextra's MDX prose element classes */
+.feed-section-content p { margin-top: 1.5rem; line-height: 1.75; }
+
+.feed-section-content p:first-child { margin-top: 0; }
+
+.feed-section-content h2 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  margin-top: 2.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--nextra-colors-gray-200, #e2e8f0);
+  color: var(--nextra-colors-gray-900, #0f172a);
+}
+
+.feed-section-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  margin-top: 2rem;
+  color: var(--nextra-colors-gray-900, #0f172a);
+}
+
+.feed-section-content h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  color: var(--nextra-colors-gray-900, #0f172a);
+}
+
+.feed-section-content ul {
+  list-style-type: disc;
+  margin-top: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.feed-section-content ol {
+  list-style-type: decimal;
+  margin-top: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.feed-section-content a {
+  color: var(--nextra-colors-primary-600, #2563eb);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.feed-section-content code {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.25em;
+  font-size: 0.9em;
+  word-break: break-words;
+}
+
+.feed-section-content pre { margin-top: 1.5rem; overflow-x: auto; }
+
+.feed-section-content pre code { background: none; border: none; padding: 0; font-size: inherit; }
+
+
+/* Dark mode overrides for feed-section-content */
+:is(html[class~="dark"]) .feed-section-content h2,
+:is(html[class~="dark"]) .feed-section-content h3,
+:is(html[class~="dark"]) .feed-section-content h4 { color: #f1f5f9; }
+
+:is(html[class~="dark"]) .feed-section-content h2 {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+:is(html[class~="dark"]) .feed-section-content code {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
 
 
 /* GitHub header icon */
