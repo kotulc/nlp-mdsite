@@ -1,5 +1,5 @@
 ---
-title: Specs
+title: Spec Format
 categories:
   - spec
 ---

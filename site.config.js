@@ -14,6 +14,9 @@ module.exports = {
   // Slug arrays pin listed pages first; unlisted slugs append alphabetically after
   nav_order: {
     '': ['about', 'getting-started', 'configuration'],
+    'features': ['overview'],
+    'specs': ['format'],
+    'updates': ['welcome'],
   },
 
   // Intelligence layer (Phase 2 — leave empty for defaults)

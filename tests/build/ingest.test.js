@@ -235,17 +235,19 @@ describe('pages output ordering', () => {
     expect(meta['index']).toMatchObject({ display: 'hidden' })
   })
 
-  test('test_pages_real_index_not_hidden_in_features_meta', () => {
-    /** features/ has a real index.md — its index entry should be a plain string title. */
+  test('test_pages_auto_redirect_index_hidden_in_features_meta', () => {
+    /** features/ has no index.md — auto-redirect index must be hidden in _meta.json. */
     const meta = JSON.parse(fs.readFileSync(path.join(PAGES, 'features', '_meta.json'), 'utf8'))
-    expect(typeof meta['index']).toBe('string')
+    expect(meta['index']).toBeDefined()
+    expect(meta['index']).toMatchObject({ display: 'hidden' })
   })
 
-  test('test_pages_updates_meta_alphabetical', () => {
-    /** updates/ non-index entries are alphabetical (no nav_order set — default is alpha). */
+  test('test_pages_updates_meta_follows_nav_order', () => {
+    /** updates/ has nav_order ['welcome'], so welcome is first; rest append alphabetically. */
     const meta = JSON.parse(fs.readFileSync(path.join(PAGES, 'updates', '_meta.json'), 'utf8'))
     const keys = Object.keys(meta).filter(k => k !== 'index')
-    expect(keys).toEqual([...keys].sort())
+    expect(keys[0]).toBe('welcome')
+    expect(keys.slice(1)).toEqual([...keys.slice(1)].sort())
   })
 
   test('test_pages_features_meta_follows_nav_order', () => {

@@ -146,21 +146,23 @@ function sort_entries(entries, rel) {
 
 function auto_index(dest_dir, sorted, rel) {
   /** Generate a redirect index.mdx to the first sorted leaf page.
+   *  Uses AutoRedirect component so Next.js handles basePath automatically.
    *  No-ops if index.mdx already exists or no leaf pages are found. */
   if (fs.existsSync(path.join(dest_dir, 'index.mdx'))) return
   const first = sorted.find(e => fs.existsSync(path.join(dest_dir, `${e.slug}.mdx`)))
   if (!first) return
-  const base = siteConfig.base_path || ''
-  const url  = rel ? `${base}/${rel}/${first.slug}/` : `${base}/${first.slug}/`
+  const url      = rel ? `/${rel}/${first.slug}/` : `/${first.slug}/`
+  const depth    = rel ? rel.split('/').length + 1 : 1
+  const rel_path = '../'.repeat(depth) + 'components/AutoRedirect'
   fs.writeFileSync(path.join(dest_dir, 'index.mdx'), [
     `---`,
     `title: ${first.title}`,
     `auto_redirect: true`,
     `---`,
     ``,
-    `import Head from 'next/head'`,
+    `import AutoRedirect from '${rel_path}'`,
     ``,
-    `<Head><meta httpEquiv="refresh" content="0; url=${url}" /></Head>`,
+    `<AutoRedirect to="${url}" />`,
   ].join('\n') + '\n')
 }
 
@@ -306,8 +308,8 @@ if (require.main === module) {
 
   if (dated_posts.length) {
     write_posts_index(dated_posts)
-    console.log(`  Found ${dated_posts.length} dated pages`)
-    console.log(`  Written public/posts-index.json`)
+    console.log(`  Found ${dated_posts.length} pages with dates`)
+    console.log(`  Written to public/posts-index.json`)
   }
 
   console.log('Done.\n')

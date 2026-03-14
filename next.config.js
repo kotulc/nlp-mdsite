@@ -4,7 +4,9 @@ const withNextra = require('nextra')({
 })
 
 const siteConfig = require('./site.config')
-const basePath = process.env.BASE_PATH || siteConfig.base_path || ''
+const basePath = process.env.NODE_ENV === 'production'
+  ? (process.env.BASE_PATH || siteConfig.base_path || '')
+  : ''
 
 module.exports = withNextra({
   output: 'export',
