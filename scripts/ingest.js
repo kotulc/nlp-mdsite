@@ -117,38 +117,29 @@ function write_meta(dest_path, entries) {
 
 
 function sort_entries(entries, rel) {
-  /** Sort: nav_order config > frontmatter order > date/year/alpha. */
+  /** Sort by nav_order[rel]: 'chronological', 'alphabetical', slug array, or default (alpha).
+   *  Array nav_order pins listed slugs first; unlisted slugs sort alphabetically after.
+   *  Chronological: dated pages newest-first, undated pages alphabetically after.
+   *  index slug is always placed first regardless of sort mode. */
   const idx  = entries.filter(e => e.slug === 'index')
   const rest = entries.filter(e => e.slug !== 'index')
+  const nav  = (siteConfig.nav_order || {})[rel]
 
-  const explicit = (siteConfig.nav_order || {})[rel]
-  if (explicit) {
-    const rank = Object.fromEntries(explicit.map((s, i) => [s, i]))
-    rest.sort((a, b) => {
-      const ar = rank[a.slug] ?? Infinity
-      const br = rank[b.slug] ?? Infinity
-      return ar !== br ? ar - br : a.slug.localeCompare(b.slug)
-    })
-    return [...idx, ...rest]
+  if (Array.isArray(nav)) {
+    const rank     = Object.fromEntries(nav.map((s, i) => [s, i]))
+    const pinned   = rest.filter(e => rank[e.slug] != null).sort((a, b) => rank[a.slug] - rank[b.slug])
+    const unpinned = rest.filter(e => rank[e.slug] == null).sort((a, b) => a.slug.localeCompare(b.slug))
+    return [...idx, ...pinned, ...unpinned]
   }
 
-  const has_order = rest.some(e => e.order != null)
-  const has_dates = rest.some(e => e.date)
-  const all_years = !has_dates && rest.length > 0 && rest.every(e => /^\d{4}$/.test(e.slug))
-
-  if (has_order) {
-    rest.sort((a, b) => {
-      const ao = a.order ?? Infinity
-      const bo = b.order ?? Infinity
-      return ao !== bo ? ao - bo : a.slug.localeCompare(b.slug)
-    })
-  } else {
-    rest.sort(
-      has_dates  ? (a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug)
-      : all_years ? (a, b) => b.slug.localeCompare(a.slug)
-      : (a, b) => a.slug.localeCompare(b.slug)
-    )
+  if (nav === 'chronological') {
+    const dated   = rest.filter(e => e.date).sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug))
+    const undated = rest.filter(e => !e.date).sort((a, b) => a.slug.localeCompare(b.slug))
+    return [...idx, ...dated, ...undated]
   }
+
+  // Default (including 'alphabetical'): alphabetical
+  rest.sort((a, b) => a.slug.localeCompare(b.slug))
   return [...idx, ...rest]
 }
 
@@ -234,7 +225,6 @@ function ingest_dir(src_dir, dest_dir, rel, dated_posts) {
       slug,
       title:        fm.title        || slug,
       date:         fm.date         || '',
-      order:        fm.order != null ? Number(fm.order) : null,
       categories:   Array.isArray(fm.categories) ? fm.categories : [],
       tags:         Array.isArray(fm.tags)        ? fm.tags        : [],
       reading_time: mins,

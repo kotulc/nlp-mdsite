@@ -12,15 +12,29 @@ const { parse_fm, sort_entries, extract_content, auto_index } = require('../../s
 // --- sort_entries ---
 
 function entry(slug, opts = {}) {
-  return { slug, title: slug, date: opts.date || '', order: opts.order ?? null }
+  return { slug, title: slug, date: opts.date || '' }
 }
 
-// Use a rel not present in site.config nav_order to avoid triggering explicit ordering
-const TEST_REL = 'test-dir'
+// Rels not present in site.config nav_order — default alphabetical
+const TEST_REL  = 'test-dir'
+
+// Patch siteConfig for chronological unit tests
+const siteConfig = require('../../site.config')
+const CHRON_REL  = '__test-chron__'
+const ARRAY_REL  = '__test-array__'
+beforeAll(() => {
+  siteConfig.nav_order[CHRON_REL] = 'chronological'
+  siteConfig.nav_order[ARRAY_REL] = ['pinned-b', 'pinned-a']
+})
+afterAll(() => {
+  delete siteConfig.nav_order[CHRON_REL]
+  delete siteConfig.nav_order[ARRAY_REL]
+})
+
 
 describe('sort_entries — default alpha', () => {
-  test('test_sort_alpha_no_dates_no_order', () => {
-    /** Pages with no dates and no order sort alphabetically by slug. */
+  test('test_sort_alpha_no_dates', () => {
+    /** Pages with no dates sort alphabetically by slug. */
     const result = sort_entries([entry('zebra'), entry('apple'), entry('mango')], TEST_REL)
     expect(result.map(e => e.slug)).toEqual(['apple', 'mango', 'zebra'])
   })
@@ -31,56 +45,71 @@ describe('sort_entries — default alpha', () => {
     expect(result[0].slug).toBe('index')
   })
 
-  test('test_sort_year_dirs_descending', () => {
-    /** All-digit 4-char slugs (year dirs) sort descending. */
-    const result = sort_entries([entry('2021'), entry('2024'), entry('2019')], TEST_REL)
-    expect(result.map(e => e.slug)).toEqual(['2024', '2021', '2019'])
+  test('test_sort_dated_pages_alpha_without_chron', () => {
+    /** Dated pages sort alphabetically when nav_order is not 'chronological'. */
+    const result = sort_entries([
+      entry('newer', { date: '2024-01-01' }),
+      entry('older', { date: '2022-01-01' }),
+    ], TEST_REL)
+    expect(result.map(e => e.slug)).toEqual(['newer', 'older'])
   })
 })
 
 
-describe('sort_entries — date ordering', () => {
-  test('test_sort_dated_newest_first', () => {
-    /** Pages with date fields sort newest-first. */
+describe('sort_entries — chronological', () => {
+  test('test_sort_chron_dated_newest_first', () => {
+    /** Dated pages sort newest-first when nav_order is 'chronological'. */
     const result = sort_entries([
       entry('old',    { date: '2022-01-01' }),
       entry('newest', { date: '2024-06-01' }),
       entry('mid',    { date: '2023-03-15' }),
-    ], TEST_REL)
+    ], CHRON_REL)
     expect(result.map(e => e.slug)).toEqual(['newest', 'mid', 'old'])
   })
 
-  test('test_sort_dated_tiebreak_alpha', () => {
-    /** Pages with equal dates sort alphabetically as tiebreak. */
+  test('test_sort_chron_tiebreak_alpha', () => {
+    /** Equal dates break alphabetically. */
     const result = sort_entries([
       entry('bravo', { date: '2024-01-01' }),
       entry('alpha', { date: '2024-01-01' }),
-    ], TEST_REL)
+    ], CHRON_REL)
     expect(result.map(e => e.slug)).toEqual(['alpha', 'bravo'])
+  })
+
+  test('test_sort_chron_undated_after_dated', () => {
+    /** Undated pages sort alphabetically after all dated pages. */
+    const result = sort_entries([
+      entry('zzz-undated'),
+      entry('aaa-dated', { date: '2020-01-01' }),
+      entry('aaa-undated'),
+    ], CHRON_REL)
+    expect(result.map(e => e.slug)).toEqual(['aaa-dated', 'aaa-undated', 'zzz-undated'])
   })
 })
 
 
-describe('sort_entries — frontmatter order', () => {
-  test('test_sort_order_frontmatter_overrides_alpha', () => {
-    /** Frontmatter order: N takes precedence over alphabetical sort. */
+describe('sort_entries — array nav_order', () => {
+  test('test_sort_array_pins_listed_slugs_first', () => {
+    /** Listed slugs appear in declared order before unlisted slugs. */
     const result = sort_entries([
-      entry('zzz', { order: 1 }),
-      entry('aaa', { order: 2 }),
-      entry('mmm', { order: 3 }),
-    ], TEST_REL)
-    expect(result.map(e => e.slug)).toEqual(['zzz', 'aaa', 'mmm'])
+      entry('unlisted-z'),
+      entry('pinned-a'),
+      entry('unlisted-a'),
+      entry('pinned-b'),
+    ], ARRAY_REL)
+    expect(result.map(e => e.slug)).toEqual(['pinned-b', 'pinned-a', 'unlisted-a', 'unlisted-z'])
   })
 
-  test('test_sort_order_missing_order_appends_alpha', () => {
-    /** Pages without order: are appended alphabetically after ordered pages. */
+  test('test_sort_array_unlisted_alpha', () => {
+    /** Unlisted slugs sort alphabetically after pinned slugs. */
     const result = sort_entries([
-      entry('zzz', { order: 1 }),
-      entry('beta'),
-      entry('alpha'),
-    ], TEST_REL)
-    expect(result[0].slug).toBe('zzz')
-    expect(result.slice(1).map(e => e.slug)).toEqual(['alpha', 'beta'])
+      entry('pinned-b'),
+      entry('charlie'),
+      entry('alice'),
+    ], ARRAY_REL)
+    const keys = result.map(e => e.slug)
+    expect(keys[0]).toBe('pinned-b')
+    expect(keys.slice(1)).toEqual(['alice', 'charlie'])
   })
 })
 
@@ -213,7 +242,7 @@ describe('pages output ordering', () => {
   })
 
   test('test_pages_updates_meta_alphabetical', () => {
-    /** updates/ non-index entries are alphabetical (no nav_order, no dates). */
+    /** updates/ non-index entries are alphabetical (no nav_order set — default is alpha). */
     const meta = JSON.parse(fs.readFileSync(path.join(PAGES, 'updates', '_meta.json'), 'utf8'))
     const keys = Object.keys(meta).filter(k => k !== 'index')
     expect(keys).toEqual([...keys].sort())

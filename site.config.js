@@ -10,11 +10,10 @@ module.exports = {
   meta_sidebar: true,      // right sidebar: tags, metrics, and related links below the TOC
 
   // Nav ordering: key = directory path from source root ('' = root level)
-  // Value = ordered slug array; folders and pages can be mixed; unlisted slugs append alphabetically
-  // Per-page: add `order: N` to a page's frontmatter for ordering without touching this file
+  // Value: 'alphabetical' (default), 'chronological' (dated first, then alpha), or a slug array
+  // Slug arrays pin listed pages first; unlisted slugs append alphabetically after
   nav_order: {
-    '': ['about', 'getting-started', 'configuration', 'features', 'components', 'spec', 'posts'],
-    'features': ['content-pipeline', 'metadata', 'styling', 'deployment'],
+    '': ['about', 'getting-started', 'configuration'],
   },
 
   // Intelligence layer (Phase 2 — leave empty for defaults)
