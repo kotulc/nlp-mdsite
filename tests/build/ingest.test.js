@@ -226,12 +226,31 @@ describe('feed-index output', () => {
 
 const PAGES = path.join(__dirname, '../../pages')
 describe('pages output ordering', () => {
-  test('test_pages_updates_meta_alphabetical', () => {
-    /** updates/ has no dates and no nav_order — entries are alphabetical. */
+  test('test_pages_auto_redirect_index_hidden_in_root_meta', () => {
+    /** Root index.mdx is auto-generated redirect — must be hidden in _meta.json. */
+    const meta = JSON.parse(fs.readFileSync(path.join(PAGES, '_meta.json'), 'utf8'))
+    expect(meta['index']).toBeDefined()
+    expect(meta['index']).toMatchObject({ display: 'hidden' })
+  })
+
+  test('test_pages_auto_redirect_index_hidden_in_updates_meta', () => {
+    /** updates/ has no index.md — auto-redirect index must be hidden in _meta.json. */
     const meta = JSON.parse(fs.readFileSync(path.join(PAGES, 'updates', '_meta.json'), 'utf8'))
-    const keys = Object.keys(meta)
-    const sorted = [...keys].sort()
-    expect(keys).toEqual(sorted)
+    expect(meta['index']).toBeDefined()
+    expect(meta['index']).toMatchObject({ display: 'hidden' })
+  })
+
+  test('test_pages_real_index_not_hidden_in_features_meta', () => {
+    /** features/ has a real index.md — its index entry should be a plain string title. */
+    const meta = JSON.parse(fs.readFileSync(path.join(PAGES, 'features', '_meta.json'), 'utf8'))
+    expect(typeof meta['index']).toBe('string')
+  })
+
+  test('test_pages_updates_meta_alphabetical', () => {
+    /** updates/ non-index entries are alphabetical (no nav_order, no dates). */
+    const meta = JSON.parse(fs.readFileSync(path.join(PAGES, 'updates', '_meta.json'), 'utf8'))
+    const keys = Object.keys(meta).filter(k => k !== 'index')
+    expect(keys).toEqual([...keys].sort())
   })
 
   test('test_pages_features_meta_follows_nav_order', () => {

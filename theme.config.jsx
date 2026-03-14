@@ -4,6 +4,7 @@ import TagList from './components/TagList'
 import MetaSidebar from './components/MetaSidebar'
 import SiteFooter from './components/SiteFooter'
 import GitHubLink from './components/GitHubLink'
+import FeedLink from './components/FeedLink'
 import ThemeToggle from './components/ThemeToggle'
 import PageContinuation from './components/PageContinuation'
 import siteConfig from './site.config'
@@ -28,6 +29,7 @@ export default {
     extraContent: (
       <>
         {siteConfig.theme_toggle === 'navbar' && <ThemeToggle />}
+        <FeedLink />
         <GitHubLink />
       </>
     ),

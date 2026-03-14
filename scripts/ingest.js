@@ -257,7 +257,14 @@ function ingest_dir(src_dir, dest_dir, rel, dated_posts) {
 
   const sorted = sort_entries(entries, rel)
   if (!fs.existsSync(path.join(dest_dir, 'index.mdx'))) auto_index(dest_dir, sorted, rel)
-  write_meta(path.join(dest_dir, '_meta.json'), sorted.map(e => [e.slug, e.title]))
+
+  // If index.mdx exists but wasn't in sorted (auto-generated redirect), hide it from sidebar
+  const has_index  = sorted.some(e => e.slug === 'index')
+  const meta_pairs = sorted.map(e => [e.slug, e.title])
+  if (!has_index && fs.existsSync(path.join(dest_dir, 'index.mdx'))) {
+    meta_pairs.unshift(['index', { display: 'hidden', title: '' }])
+  }
+  write_meta(path.join(dest_dir, '_meta.json'), meta_pairs)
   return { title: dir_title }
 }
 
