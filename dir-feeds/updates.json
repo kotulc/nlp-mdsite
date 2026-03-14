@@ -1,0 +1,34 @@
+[
+  {
+    "slug": "welcome",
+    "title": "Welcome",
+    "date": "2026-03-07",
+    "categories": [
+      "announcement"
+    ],
+    "tags": [
+      "markdown",
+      "nextjs",
+      "static-site"
+    ],
+    "reading_time": 1,
+    "url": "/updates/welcome",
+    "content": "This site is built with nlp-mdsite — a static site template for publishing markdown\ncontent with zero per-page configuration.\n\n![Rendered page preview](/images/updates/example.svg)\n\nEverything you see on this page is driven by the frontmatter at the top of this\nmarkdown file: the date, the \"announcement\" category chip, and the tags. Reading time\nis estimated automatically from the word count and injected by the pipeline.\n\n## How it works\n\nWrite your content as plain markdown. Run one command. Get a fully built static site.\n\nThe [content pipeline](/features/content-pipeline) handles the rest:\nconverting markdown to MDX, copying and path-rewriting images, generating navigation\nmetadata, and producing a post index.\n\n## Source structure\n\nThis post lives at `docs/updates/introducing-nlp-mdsite.md` in the repository.\nThe pipeline mirrors it to `pages/updates/introducing-nlp-mdsite.mdx` and adds it\nto `posts-index.json`, so it appears in the [Updates](/updates) index automatically.\n\nThe image above (`images/example.svg`) is stored next to this file at\n`docs/updates/images/example.svg`. The pipeline copies it to\n`public/images/updates/example.svg` and rewrites the reference to an absolute path.\n\n## Next steps\n\n- Read the [Getting Started](/getting-started) guide\n- Browse the [Features](/features) section\n- Fork the repo and point it at your own content"
+  },
+  {
+    "slug": "plans",
+    "title": "Future Plans",
+    "date": "2026-03-08",
+    "categories": [
+      "roadmap"
+    ],
+    "tags": [
+      "planning",
+      "phase-2",
+      "intelligence"
+    ],
+    "reading_time": 2,
+    "url": "/updates/plans",
+    "content": "Phase 1 of `nlp-mdsite` is complete. The core pipeline — markdown ingestion, metadata\ndisplay, navigation, theming, and GitHub Pages deployment — is fully functional.\n\nPhase 2 focuses on the \"NLP\" part: intelligence features that go beyond static rendering\nand begin to surface meaning from content.\n\n\n## What's built (Phase 1)\n\n- Markdown → MDX conversion with any source folder structure\n- Image copying, path rewriting, and EXIF repair\n- Reading time estimation, injected automatically into every page\n- Tag and category chips; numeric frontmatter metrics in a sticky sidebar\n- Nav ordering via `site.config.js` and per-page frontmatter `order:`\n- Per-page continuation feed (scroll to load the next page inline)\n- Light / dark / system theme toggle in the navbar\n- GitHub repo icon in the navbar, driven by `repo_url` in config\n- GitHub Actions deployment workflow\n- README auto-sync to the `/about` page on each default ingest run\n\n\n## In development (Phase 2)\n\n### Semantic search\n\nA client-side search component that queries across all content by meaning, not just\nkeyword matching. The plan is to pre-compute a lightweight embedding index at build time\nand serve it as a static JSON asset, keeping the site fully static with no server required.\n\nConfig hook (reserved): none yet — will be a new `search:` field in `site.config.js`.\n\n### Semantic theming\n\nDerives a color palette and visual identity from content signals rather than manual\nconfiguration. The upstream pipeline (`mdpub`) analyzes the content and writes\n`content_style` and `theme_mood` into `site.config.js`; the template reads these to\nselect an appropriate Nextra `primaryHue` and accent palette.\n\nConfig hooks (reserved in `site.config.js`):\n```js\ncontent_style: '',  // e.g. 'technical', 'narrative', 'minimal'\ntheme_mood: '',     // e.g. 'calm', 'bold', 'professional'\n```\n\n### Logo generation\n\nA seeded SVG logo composed from a curated icon set and background shapes. Incrementing\n`logo_seed` in `site.config.js` regenerates the logo without any manual design work.\nIntended for agent-driven site creation where no human designer is in the loop.\n\nConfig hook (reserved in `site.config.js`):\n```js\nlogo_seed: 1,  // increment to regenerate\n```\n\n### Reduced external dependencies\n\nThe current stack leans on `nextra-theme-docs` for navigation, search, and layout.\nPhase 2 will selectively replace Nextra internals with purpose-built components,\nreducing the dependency footprint and giving tighter control over the rendered output.\n`react-markdown` (used by the continuation feed) is the first candidate for replacement\nwith a lighter in-house renderer.\n\n\n## Integrations\n\n`nlp-mdsite` is the rendering end of the [`mdpub`](https://github.com/kotulc/nlp-mdpub)\npipeline. Phase 2 intelligence features are co-developed: `mdpub` generates the signals\n(embeddings, style tags, theme hints) and this template consumes and renders them."
+  }
+]
