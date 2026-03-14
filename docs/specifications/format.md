@@ -4,7 +4,7 @@ categories:
   - spec
 ---
 
-# Specs
+# Feature Specification
 
 Feature specifications for nlp-mdsite. Each spec defines the purpose, requirements,
 and named test cases for a feature area.
@@ -16,7 +16,7 @@ and named test cases for a feature area.
 3. Implement the feature until all tests pass
 4. The spec page appears in the site automatically after running `npm run ingest`
 
-## Spec Format
+## Markdown Format
 
 ```markdown
 ---

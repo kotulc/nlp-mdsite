@@ -10,8 +10,8 @@ module.exports = {
   meta_sidebar: true,      // right sidebar: tags, metrics, and related links below the TOC
 
   // Nav ordering: key = directory path from source root ('' = root level)
-  // Value: 'alphabetical' (default), 'chronological' (dated first, then alpha), or a slug array
-  // Slug arrays pin listed pages first; unlisted slugs append alphabetically after
+  // Value: slug array to pin specific pages first; unlisted pages auto-sort
+  // Auto-sort: newest-first when any page has a date field, alphabetical otherwise
   nav_order: {
     '': ['about', 'getting-started', 'configuration'],
     'features': ['overview'],

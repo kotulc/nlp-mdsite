@@ -23,8 +23,6 @@ A Next.js static site template for intelligent, agent-friendly publishing from m
 Point it at a directory of markdown files, run a single command, and get a fully built
 static website ready for GitHub Pages.
 
-![Content pipeline](images/pipeline.svg)
-
 
 ## Purpose
 

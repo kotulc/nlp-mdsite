@@ -26,6 +26,7 @@ Or use the setup command, which also validates your environment:
 
     npm run setup -- --source path/to/source
 
+
 ## What the pipeline does
 
 1. **Converts `.md` → `.mdx`** — any file named `home.md` or `index.md` becomes
@@ -46,12 +47,9 @@ Or use the setup command, which also validates your environment:
    the page's frontmatter as `reading_time`.
 
 6. **Generates `_meta.json`** — navigation ordering at every directory level.
-   Sort order precedence (highest first):
-   - `nav_order` key in `site.config.js` for that directory path
-   - Frontmatter `order: N` on individual pages (lower numbers first)
-   - Date field present → newest-first
-   - Directory of 4-digit year slugs (e.g. `2020/`, `2023/`) → descending
-   - Default → alphabetical by slug
+   Sort order:
+   - `nav_order` array in `site.config.js` pins listed pages first in declared order
+   - Remaining pages: newest-first if any have a `date` field, alphabetical otherwise
 
 7. **Writes `posts-index.json`** — all dated pages that are not at the source root
    are collected into `public/posts-index.json`, sorted newest-first. This powers

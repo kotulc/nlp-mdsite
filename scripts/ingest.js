@@ -116,11 +116,24 @@ function write_meta(dest_path, entries) {
 }
 
 
+function auto_sort(entries) {
+  /** Sort entries: newest-first by date when any entry has a date, else alphabetical.
+   *  Undated entries always sort alphabetically after dated entries. */
+  const dated   = entries.filter(e => e.date)
+  const undated = entries.filter(e => !e.date)
+  if (!dated.length) return [...entries].sort((a, b) => a.slug.localeCompare(b.slug))
+  return [
+    ...dated.sort((a, b)   => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug)),
+    ...undated.sort((a, b) => a.slug.localeCompare(b.slug)),
+  ]
+}
+
+
 function sort_entries(entries, rel) {
-  /** Sort by nav_order[rel]: 'chronological', 'alphabetical', slug array, or default (alpha).
-   *  Array nav_order pins listed slugs first; unlisted slugs sort alphabetically after.
-   *  Chronological: dated pages newest-first, undated pages alphabetically after.
-   *  index slug is always placed first regardless of sort mode. */
+  /** Sort entries for a directory.
+   *  nav_order[rel] slug array: listed slugs pinned first in declared order, rest auto-sorted.
+   *  Auto-sort: newest-first if any entries have dates, alphabetical otherwise.
+   *  index slug is always placed first. */
   const idx  = entries.filter(e => e.slug === 'index')
   const rest = entries.filter(e => e.slug !== 'index')
   const nav  = (siteConfig.nav_order || {})[rel]
@@ -128,19 +141,11 @@ function sort_entries(entries, rel) {
   if (Array.isArray(nav)) {
     const rank     = Object.fromEntries(nav.map((s, i) => [s, i]))
     const pinned   = rest.filter(e => rank[e.slug] != null).sort((a, b) => rank[a.slug] - rank[b.slug])
-    const unpinned = rest.filter(e => rank[e.slug] == null).sort((a, b) => a.slug.localeCompare(b.slug))
-    return [...idx, ...pinned, ...unpinned]
+    const unpinned = rest.filter(e => rank[e.slug] == null)
+    return [...idx, ...pinned, ...auto_sort(unpinned)]
   }
 
-  if (nav === 'chronological') {
-    const dated   = rest.filter(e => e.date).sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug))
-    const undated = rest.filter(e => !e.date).sort((a, b) => a.slug.localeCompare(b.slug))
-    return [...idx, ...dated, ...undated]
-  }
-
-  // Default (including 'alphabetical'): alphabetical
-  rest.sort((a, b) => a.slug.localeCompare(b.slug))
-  return [...idx, ...rest]
+  return [...idx, ...auto_sort(rest)]
 }
 
 

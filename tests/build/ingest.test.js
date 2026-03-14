@@ -15,24 +15,17 @@ function entry(slug, opts = {}) {
   return { slug, title: slug, date: opts.date || '' }
 }
 
-// Rels not present in site.config nav_order — default alphabetical
+// Rels not present in site.config nav_order — use auto-detection
 const TEST_REL  = 'test-dir'
 
-// Patch siteConfig for chronological unit tests
+// Patch siteConfig for array nav_order unit tests
 const siteConfig = require('../../site.config')
-const CHRON_REL  = '__test-chron__'
 const ARRAY_REL  = '__test-array__'
-beforeAll(() => {
-  siteConfig.nav_order[CHRON_REL] = 'chronological'
-  siteConfig.nav_order[ARRAY_REL] = ['pinned-b', 'pinned-a']
-})
-afterAll(() => {
-  delete siteConfig.nav_order[CHRON_REL]
-  delete siteConfig.nav_order[ARRAY_REL]
-})
+beforeAll(() => { siteConfig.nav_order[ARRAY_REL] = ['pinned-b', 'pinned-a'] })
+afterAll(() => { delete siteConfig.nav_order[ARRAY_REL] })
 
 
-describe('sort_entries — default alpha', () => {
+describe('sort_entries — auto alpha (no dates)', () => {
   test('test_sort_alpha_no_dates', () => {
     /** Pages with no dates sort alphabetically by slug. */
     const result = sort_entries([entry('zebra'), entry('apple'), entry('mango')], TEST_REL)
@@ -44,45 +37,36 @@ describe('sort_entries — default alpha', () => {
     const result = sort_entries([entry('zebra'), entry('index'), entry('apple')], TEST_REL)
     expect(result[0].slug).toBe('index')
   })
-
-  test('test_sort_dated_pages_alpha_without_chron', () => {
-    /** Dated pages sort alphabetically when nav_order is not 'chronological'. */
-    const result = sort_entries([
-      entry('newer', { date: '2024-01-01' }),
-      entry('older', { date: '2022-01-01' }),
-    ], TEST_REL)
-    expect(result.map(e => e.slug)).toEqual(['newer', 'older'])
-  })
 })
 
 
-describe('sort_entries — chronological', () => {
-  test('test_sort_chron_dated_newest_first', () => {
-    /** Dated pages sort newest-first when nav_order is 'chronological'. */
+describe('sort_entries — auto chronological (dates present)', () => {
+  test('test_sort_dated_newest_first', () => {
+    /** Pages with dates auto-sort newest-first when any date is present. */
     const result = sort_entries([
       entry('old',    { date: '2022-01-01' }),
       entry('newest', { date: '2024-06-01' }),
       entry('mid',    { date: '2023-03-15' }),
-    ], CHRON_REL)
+    ], TEST_REL)
     expect(result.map(e => e.slug)).toEqual(['newest', 'mid', 'old'])
   })
 
-  test('test_sort_chron_tiebreak_alpha', () => {
+  test('test_sort_dated_tiebreak_alpha', () => {
     /** Equal dates break alphabetically. */
     const result = sort_entries([
       entry('bravo', { date: '2024-01-01' }),
       entry('alpha', { date: '2024-01-01' }),
-    ], CHRON_REL)
+    ], TEST_REL)
     expect(result.map(e => e.slug)).toEqual(['alpha', 'bravo'])
   })
 
-  test('test_sort_chron_undated_after_dated', () => {
+  test('test_sort_undated_after_dated', () => {
     /** Undated pages sort alphabetically after all dated pages. */
     const result = sort_entries([
       entry('zzz-undated'),
       entry('aaa-dated', { date: '2020-01-01' }),
       entry('aaa-undated'),
-    ], CHRON_REL)
+    ], TEST_REL)
     expect(result.map(e => e.slug)).toEqual(['aaa-dated', 'aaa-undated', 'zzz-undated'])
   })
 })
@@ -100,16 +84,16 @@ describe('sort_entries — array nav_order', () => {
     expect(result.map(e => e.slug)).toEqual(['pinned-b', 'pinned-a', 'unlisted-a', 'unlisted-z'])
   })
 
-  test('test_sort_array_unlisted_alpha', () => {
-    /** Unlisted slugs sort alphabetically after pinned slugs. */
+  test('test_sort_array_unlisted_auto_chrono', () => {
+    /** Unlisted slugs with dates auto-sort chronologically after pinned slugs. */
     const result = sort_entries([
       entry('pinned-b'),
-      entry('charlie'),
-      entry('alice'),
+      entry('newer', { date: '2024-01-01' }),
+      entry('older', { date: '2022-01-01' }),
     ], ARRAY_REL)
     const keys = result.map(e => e.slug)
     expect(keys[0]).toBe('pinned-b')
-    expect(keys.slice(1)).toEqual(['alice', 'charlie'])
+    expect(keys.slice(1)).toEqual(['newer', 'older'])
   })
 })
 
