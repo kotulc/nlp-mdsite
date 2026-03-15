@@ -238,6 +238,7 @@ function ingest_dir(src_dir, dest_dir, rel) {
     rewrite_md_links(dest, url_base)
     const mins = add_reading_time(dest)
     const fm   = parse_fm(fs.readFileSync(dest, 'utf8'))
+    if (slug !== 'index') ensure_h1(dest, fm.title || slug)
 
     const parts = [...(rel ? rel.split('/') : []), ...(slug === 'index' ? [] : [slug])]
     const url   = '/' + parts.join('/')
@@ -304,6 +305,16 @@ function ingest_dir(src_dir, dest_dir, rel) {
   return { title: dir_title }
 }
 
+
+
+function ensure_h1(mdx_path, title) {
+  /** Prepend # title heading if body has no h1. */
+  const content = fs.readFileSync(mdx_path, 'utf8')
+  const body    = content.replace(/^---[\s\S]*?---\r?\n/, '')
+  if (/^#\s/.test(body.trimStart())) return
+  const updated = content.replace(/(^---[\s\S]*?---\r?\n)/, `$1\n# ${title}\n\n`)
+  fs.writeFileSync(mdx_path, updated)
+}
 
 
 function extract_content(mdx) {

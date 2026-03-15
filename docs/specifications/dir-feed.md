@@ -1,10 +1,8 @@
 ---
-title: Dir Feed
+title: Directory Feed
 categories:
   - spec
 ---
-
-# Dir Feed
 
 The `flatten` config field allows any directory to be rendered as a single
 scrolling inline feed instead of individual navigable pages.

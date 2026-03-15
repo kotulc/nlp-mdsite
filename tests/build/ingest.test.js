@@ -212,6 +212,13 @@ describe('pages output ordering', () => {
     expect(meta['index']).toMatchObject({ display: 'hidden' })
   })
 
+  test('test_pages_ensure_h1_injected', () => {
+    /** Pages without a source h1 get one prepended from frontmatter title. */
+    const content = fs.readFileSync(path.join(PAGES, 'getting-started.mdx'), 'utf8')
+    const body    = content.replace(/^---[\s\S]*?---\r?\n/, '')
+    expect(body.trimStart()).toMatch(/^# /)
+  })
+
   test('test_pages_flatten_generates_page_file', () => {
     /** updates/ is flattened — DirFeed written as pages/updates.mdx (flat page, not folder). */
     expect(fs.existsSync(path.join(PAGES, 'updates.mdx'))).toBe(true)
