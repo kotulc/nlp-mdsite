@@ -249,6 +249,10 @@ img {
   font-style: italic;
 }
 
+/* Hide breadcrumb on root-level pages — no parent path, so no chevron separator svg */
+.nextra-breadcrumb:not(:has(svg)) { display: none; }
+
+
 /* Show Nextra's right TOC column at lg (1024px) instead of xl (1280px) */
 @media (min-width: 1280px) {
   .nextra-toc { display: block !important; }

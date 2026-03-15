@@ -15,7 +15,7 @@ related:
     url: /features
 ---
 
-# Tutorial
+# Getting Started
 
 ## Prerequisites
 

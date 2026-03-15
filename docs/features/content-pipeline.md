@@ -7,7 +7,7 @@ tags:
   - images
   - routing
 readability: 72
-steps: 7
+steps: 8
 related:
   - title: Metadata Display
     url: /features/metadata
@@ -46,12 +46,17 @@ Or use the setup command, which also validates your environment:
 5. **Injects reading time** — word count ÷ 200, minimum 1 minute, written into
    the page's frontmatter as `reading_time`.
 
-6. **Generates `_meta.json`** — navigation ordering at every directory level.
+6. **Ensures h1 heading** — if the copied page body has no `# Heading`, one is prepended
+   using the frontmatter `title` (falling back to the file slug). This is required because
+   page metadata (date, reading time, category and tag chips) is injected immediately after
+   the h1 via a component override — without a heading they would not render.
+
+7. **Generates `_meta.json`** — navigation ordering at every directory level.
    Sort order:
    - `nav_order` array in `site.config.js` pins listed pages first in declared order
    - Remaining pages: newest-first if any have a `date` field, alphabetical otherwise
 
-7. **Flattens directories** — directories listed in `site.config.js` `flatten` field
+8. **Flattens directories** — directories listed in `site.config.js` `flatten` field
    are rendered as a single scrolling inline feed instead of individual navigable pages.
    A `public/dir-feeds/<name>.json` file is written with each page's full content,
    and the directory's `index.mdx` uses the `DirFeed` component to render them inline.
