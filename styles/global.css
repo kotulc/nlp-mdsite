@@ -119,6 +119,116 @@
 }
 
 
+/* Remove extra top margin on first DirFeed entry (aligns with regular page h1 spacing) */
+.dir-feed > .feed-section:first-child { margin-top: 0; }
+
+
+/* Navbar icons group — wraps theme/feed/github icons */
+.navbar-icons { display: flex; align-items: center; gap: 0.5rem; }
+
+
+/* =============================================================================
+   NAVBAR COLUMN ALIGNMENT
+   ─────────────────────────────────────────────────────────────────────────────
+   Goal: mirror the 3-column page layout (sidebar / content / TOC) in the navbar.
+
+   Key measurements (from built HTML):
+     • Nav + page share the same container: max-w-[90rem] (1440px), mx-auto
+     • Nav has safe-area padding: 1.5rem each side → inner width = 87rem
+     • Page has no outer padding → sidebar/TOC edges are flush with container
+     • Left sidebar: 16rem  (visible at md: 768px+)
+     • Right TOC:    16rem  (visible at xl: 1280px+)
+
+   Alignment formula:
+     nav element width = sidebar width − nav padding = 16rem − 1.5rem = 14.5rem
+     logo (14.5rem) + search (flex fill) + icons (14.5rem) = 87rem ✓
+
+   Selectors (Nextra internals — verified from built HTML):
+     Nav element:    .nextra-nav-container nav
+     Logo anchor:    .nextra-nav-container nav a.ltr\:nx-mr-auto
+     Search wrapper: .nextra-nav-container nav .nextra-search
+     Search results: .nextra-search ul
+     Icons group:    .navbar-icons  (custom wrapper in theme.config.jsx)
+   ============================================================================= */
+
+/* — Reflow nav to flex-start so fixed-width columns stack left-to-right — */
+.nextra-nav-container nav {
+  margin-right: auto !important;
+}
+
+/* — Logo column: aligns right edge with left sidebar right edge — */
+.nextra-nav-container nav a.ltr\:nx-mr-auto {
+  min-width: 14.5rem;   /* = 16rem sidebar − 1.5rem nav padding */
+  flex-shrink: 0;
+}
+
+/* — Search: leave Nextra's default (256px) untouched below xl — */
+/* — At xl+: expand to fill the content column — */
+@media (min-width: 1280px) {
+  .nextra-nav-container nav .nextra-search {
+    flex: 1 1 auto;
+    width: auto !important;  /* overrides Nextra's md:w-64 utility */
+  }
+}
+
+/* — Search results panel (position: absolute, anchored to .nextra-search top-left) — */
+/* — Only override visual properties; do not change position/top/left/z-index — */
+/* Selectors to use when styling:
+     .nextra-search ul                         results container
+     .nextra-search ul li                      individual result row
+     .nextra-search ul li[aria-selected="true"] highlighted row
+   Available variables: --nextra-colors-gray-100/200, --nextra-colors-primary-100/700 */
+
+/* — Icons group: push right at md–lg; lock to 14.5rem column at xl+ — */
+@media (min-width: 768px) {
+  .navbar-icons {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  div.nextra-search {
+    flex: 1 1 auto;
+    padding-left: 0rem;
+    padding-right: 3rem;
+    left: 0;
+    width: 60%;
+  }
+  /* Nextra search results */
+  :is([dir=ltr] .ltr\:md\:nx-left-auto) {
+      margin-right: -15rem;
+  }
+  .md\:nx-px-12 {
+    padding-left: 1rem !important;
+    padding-right: 3rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .navbar-icons {
+    width: 14.5rem;    /* = 16rem TOC − 1.5rem nav padding */
+    margin-left: 0;
+  }
+  div.nextra-search {
+    padding-left: 2rem;
+    padding-right: 4rem;
+    width: 75%;
+  }
+  /* Nextra search results */
+  :is([dir=ltr] .ltr\:md\:nx-left-auto) {
+      margin-right: 0rem;
+      width: 100%;
+  }
+  .md\:nx-px-12 {
+    padding-left: 3rem !important;
+    padding-right: 5rem !important;
+  }
+}
+
+/* — Dark mode: add dark variants here using the same selectors — */
+/* :is(html[class~="dark"]) .nextra-search ul { } */
+
+/* ============================================================================= */
+
+
 /* GitHub header icon */
 .github-link {
   display: flex;
@@ -251,7 +361,6 @@ img {
 
 /* Hide breadcrumb on root-level pages — no parent path, so no chevron separator svg */
 .nextra-breadcrumb:not(:has(svg)) { display: none; }
-
 
 /* Show Nextra's right TOC column at lg (1024px) instead of xl (1280px) */
 @media (min-width: 1280px) {

@@ -11,6 +11,11 @@ import PageHeader from './PageHeader'
 import TagList from './TagList'
 
 
+const md_components = (basePath) => ({
+  img: ({ src, alt }) => <img src={`${basePath}${src}`} alt={alt} />,
+})
+
+
 export default function DirFeed({ dir }) {
   const { basePath } = useRouter()
   const [entries, set_entries] = useState(null)
@@ -37,7 +42,7 @@ export default function DirFeed({ dir }) {
           <PageHeader date={e.date} reading_time={e.reading_time} />
           <TagList categories={e.categories} tags={e.tags} />
           <div className="feed-section-content">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{e.content}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={md_components(basePath)}>{e.content}</ReactMarkdown>
           </div>
         </section>
       ))}

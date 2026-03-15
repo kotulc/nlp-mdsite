@@ -4,7 +4,13 @@ import DirFeed from '../../components/DirFeed'
 
 jest.mock('next/router', () => ({ useRouter: () => ({ basePath: '' }) }))
 jest.mock('next/link', () => ({ __esModule: true, default: ({ href, children }) => <a href={href}>{children}</a> }))
-jest.mock('react-markdown', () => ({ __esModule: true, default: ({ children }) => <div>{children}</div> }))
+jest.mock('react-markdown', () => ({
+  __esModule: true,
+  default: ({ children, components }) => {
+    const Img = components?.img
+    return <div>{children}{Img && <Img src="/images/test.svg" alt="test" />}</div>
+  },
+}))
 jest.mock('remark-gfm', () => ({ __esModule: true, default: () => {} }))
 
 const ENTRIES = [{
@@ -44,6 +50,16 @@ test('test_dir_feed_renders_content_inside_prose_wrapper', async () => {
   const prose = container.querySelector('.feed-section-content')
   expect(prose).not.toBeNull()
   expect(prose.textContent.length).toBeGreaterThan(0)
+})
+
+test('test_dir_feed_images_prepend_basepath', async () => {
+  /** Images in feed content get basePath prepended so they resolve under a subpath deployment. */
+  jest.spyOn(require('next/router'), 'useRouter').mockReturnValue({ basePath: '/base' })
+  const { container } = render(<DirFeed dir="updates" />)
+  await waitFor(() => screen.getByText('Welcome'))
+  const img = container.querySelector('img')
+  expect(img).not.toBeNull()
+  expect(img.getAttribute('src')).toBe('/base/images/test.svg')
 })
 
 test('test_dir_feed_shows_loading_state', () => {

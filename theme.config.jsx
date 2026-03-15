@@ -37,11 +37,11 @@ export default {
   darkMode: siteConfig.theme_toggle !== 'navbar',
   navbar: {
     extraContent: (
-      <>
+      <div className="navbar-icons">
         {siteConfig.theme_toggle === 'navbar' && <ThemeToggle />}
         <FeedLink />
         <GitHubLink />
-      </>
+      </div>
     ),
   },
   footer: { text: <SiteFooter /> },
