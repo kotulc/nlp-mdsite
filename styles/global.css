@@ -162,23 +162,6 @@
   flex-shrink: 0;
 }
 
-/* — Search: leave Nextra's default (256px) untouched below xl — */
-/* — At xl+: expand to fill the content column — */
-@media (min-width: 1280px) {
-  .nextra-nav-container nav .nextra-search {
-    flex: 1 1 auto;
-    width: auto !important;  /* overrides Nextra's md:w-64 utility */
-  }
-}
-
-/* — Search results panel (position: absolute, anchored to .nextra-search top-left) — */
-/* — Only override visual properties; do not change position/top/left/z-index — */
-/* Selectors to use when styling:
-     .nextra-search ul                         results container
-     .nextra-search ul li                      individual result row
-     .nextra-search ul li[aria-selected="true"] highlighted row
-   Available variables: --nextra-colors-gray-100/200, --nextra-colors-primary-100/700 */
-
 /* — Icons group: push right at md–lg; lock to 14.5rem column at xl+ — */
 @media (min-width: 768px) {
   .navbar-icons {
@@ -194,7 +177,9 @@
   }
   /* Nextra search results */
   :is([dir=ltr] .ltr\:md\:nx-left-auto) {
-      margin-right: -15rem;
+    margin-top: 1rem;
+    right: 0;
+    width: auto;
   }
   .md\:nx-px-12 {
     padding-left: 1rem !important;
@@ -202,10 +187,16 @@
   }
 }
 
+/* — Search: leave Nextra's default (256px) untouched below xl — */
+/* — At xl+: expand to fill the content column — */
 @media (min-width: 1280px) {
   .navbar-icons {
     width: 14.5rem;    /* = 16rem TOC − 1.5rem nav padding */
     margin-left: 0;
+  }
+  .nextra-nav-container nav .nextra-search {
+    flex: 1 1 auto;
+    width: auto !important;  /* overrides Nextra's md:w-64 utility */
   }
   div.nextra-search {
     padding-left: 2rem;
@@ -214,14 +205,23 @@
   }
   /* Nextra search results */
   :is([dir=ltr] .ltr\:md\:nx-left-auto) {
-      margin-right: 0rem;
-      width: 100%;
+    margin-top: 1rem;
+    right: 0;
+    width: auto;
   }
   .md\:nx-px-12 {
     padding-left: 3rem !important;
     padding-right: 5rem !important;
   }
 }
+
+/* — Search results panel (position: absolute, anchored to .nextra-search top-left) — */
+/* — Only override visual properties; do not change position/top/left/z-index — */
+/* Selectors to use when styling:
+     .nextra-search ul                         results container
+     .nextra-search ul li                      individual result row
+     .nextra-search ul li[aria-selected="true"] highlighted row
+   Available variables: --nextra-colors-gray-100/200, --nextra-colors-primary-100/700 */
 
 /* — Dark mode: add dark variants here using the same selectors — */
 /* :is(html[class~="dark"]) .nextra-search ul { } */
