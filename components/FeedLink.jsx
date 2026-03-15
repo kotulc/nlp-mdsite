@@ -1,7 +1,10 @@
 /**
- * RSS icon button in the navbar. Placeholder for a future continuous-scroll
- * toggle feature — currently renders as a no-op button.
+ * RSS icon button in the navbar. Links to siteConfig.feed_url.
+ * Hidden if feed_url is not set.
  */
+import Link from 'next/link'
+import siteConfig from '../site.config'
+
 
 const RSS_ICON = (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -12,9 +15,11 @@ const RSS_ICON = (
 
 
 export default function FeedLink() {
+  if (!siteConfig.feed_url) return null
+  const href = `/${siteConfig.feed_url.replace(/^\/+|\/+$/g, '')}`
   return (
-    <button className="github-link" aria-label="Feed" onClick={() => {}}>
+    <Link href={href} className="github-link" aria-label="Feed">
       {RSS_ICON}
-    </button>
+    </Link>
   )
 }

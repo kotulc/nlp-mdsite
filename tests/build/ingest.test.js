@@ -6,7 +6,7 @@ const fs   = require('fs')
 const os   = require('os')
 const path = require('path')
 
-const { parse_fm, sort_entries, extract_content, auto_index } = require('../../scripts/ingest')
+const { parse_fm, sort_entries, extract_content, auto_index, norm_path } = require('../../scripts/ingest')
 
 
 // --- sort_entries ---
@@ -293,5 +293,63 @@ describe('dir-feed output', () => {
     for (const v of Object.values(meta)) {
       expect(v).toMatchObject({ display: 'hidden' })
     }
+  })
+})
+
+
+// --- norm_path ---
+
+describe('norm_path', () => {
+  test('test_norm_path_strips_leading_slash', () => {
+    /** Leading slash is stripped. */
+    expect(norm_path('/updates')).toBe('updates')
+  })
+
+  test('test_norm_path_strips_trailing_slash', () => {
+    /** Trailing slash is stripped. */
+    expect(norm_path('updates/')).toBe('updates')
+  })
+
+  test('test_norm_path_strips_both_slashes', () => {
+    /** Leading and trailing slashes are both stripped. */
+    expect(norm_path('/updates/')).toBe('updates')
+  })
+
+  test('test_norm_path_root_slash_becomes_empty', () => {
+    /** Bare '/' normalizes to '' (root). */
+    expect(norm_path('/')).toBe('')
+  })
+
+  test('test_norm_path_empty_stays_empty', () => {
+    /** Empty string stays empty. */
+    expect(norm_path('')).toBe('')
+  })
+
+  test('test_norm_path_preserves_subfolder', () => {
+    /** Internal slashes in subpaths are preserved. */
+    expect(norm_path('/updates/subfolder')).toBe('updates/subfolder')
+  })
+})
+
+
+// --- nav_order slash normalization ---
+
+const SLASH_REL = '__test-slash__'
+beforeAll(() => { siteConfig.nav_order[`/${SLASH_REL}`] = ['pinned-x'] })
+afterAll(() => { delete siteConfig.nav_order[`/${SLASH_REL}`] })
+
+describe('sort_entries — nav_order slash normalization', () => {
+  test('test_sort_slash_prefixed_nav_order_key_matched', () => {
+    /** nav_order key with leading slash matches the clean rel used internally. */
+    const result = sort_entries([entry('pinned-x'), entry('other')], SLASH_REL)
+    expect(result[0].slug).toBe('pinned-x')
+  })
+
+  test('test_sort_root_slash_nav_order_key_matches_empty_rel', () => {
+    /** nav_order key '/' is treated as root ('') and applied to root-level pages. */
+    const orig = siteConfig.nav_order['/'] = ['about']
+    const result = sort_entries([entry('zebra'), entry('about')], '')
+    expect(result[0].slug).toBe('about')
+    delete siteConfig.nav_order['/']
   })
 })

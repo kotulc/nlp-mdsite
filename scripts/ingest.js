@@ -116,9 +116,15 @@ function write_meta(dest_path, entries) {
 }
 
 
+function norm_path(p) {
+  /** Strip leading and trailing slashes; '/' and '' both become ''. */
+  return (p || '').replace(/^\/+|\/+$/g, '')
+}
+
+
 function is_flatten(rel) {
-  /** True if rel matches a directory in siteConfig.flatten ('/' normalizes to ''). */
-  return (siteConfig.flatten || []).map(d => d === '/' ? '' : d).includes(rel)
+  /** True if rel matches a directory in siteConfig.flatten (paths normalized). */
+  return (siteConfig.flatten || []).map(norm_path).includes(rel)
 }
 
 
@@ -151,7 +157,10 @@ function sort_entries(entries, rel) {
    *  index slug is always placed first. */
   const idx  = entries.filter(e => e.slug === 'index')
   const rest = entries.filter(e => e.slug !== 'index')
-  const nav  = (siteConfig.nav_order || {})[rel]
+  const nav_map = Object.fromEntries(
+    Object.entries(siteConfig.nav_order || {}).map(([k, v]) => [norm_path(k), v])
+  )
+  const nav  = nav_map[rel]
 
   if (Array.isArray(nav)) {
     const rank     = Object.fromEntries(nav.map((s, i) => [s, i]))
@@ -343,7 +352,7 @@ function sync_readme() {
 
 // --- Exports (for testing) ---
 
-module.exports = { parse_fm, sort_entries, extract_content, auto_index }
+module.exports = { parse_fm, sort_entries, extract_content, auto_index, norm_path }
 
 
 // --- Main ---
